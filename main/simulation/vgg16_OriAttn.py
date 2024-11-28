@@ -14,7 +14,7 @@
 Run with python 2.7
 Contact: gracewlindsay@gmail.com
 '''
-
+## conda activate /ext3/envs/vgg16_env
 
 import tensorflow as tf
 import numpy as np
@@ -25,10 +25,10 @@ attn2oriA=40 # ori attn applied to: 0, 20, 40, 60, 80, 100, 120, 140, or 160
 lyr=12 #layer attention applied at: 0-12 or 13 for all layers (at 1/10th strength)
 appwith = 'TCs' #what values to apply attention according to: 'TCs' or 'GRADs'
 astrgs=np.arange(0,1.,.5) #attention strengths (betas)
-TCpath='/rigel/theory/users/gwl2108/VGG16'  #folder with tuning curve and gradient files 
-weight_path = '/rigel/theory/users/gwl2108/VGG16' #folder with network and classifier weights
-impath='/rigel/theory/users/gwl2108/VGG16' #folder where image files are kept
-save_path = '/rigel/theory/users/gwl2108/VGG16' #where to save the recording and performance files
+TCpath='/scratch/hy2611/CNN_attention/Data/VGG16/ori_TCGrads'  #folder with tuning curve and gradient files 
+weight_path = '/scratch/hy2611/CNN_attention/Data/VGG16' #folder with network and classifier weights
+impath='/scratch/hy2611/CNN_attention/Data/VGG16/' #folder where image files are kept
+save_path = '/scratch/hy2611/CNN_attention/Data/VGG16' #where to save the recording and performance files
 rec_activity = True #record and save activity or no
 
 savstr='OriAttn'+'_a'+appwith+'_'+str(attn2oriA)+'o'+str(lyr)+'l'
@@ -445,7 +445,7 @@ if __name__ == '__main__':
     vgg = vgg16(imgs, labs=labs,weights=weight_path+'/vgg16_weights.npz', sess=sess)
 
     saver3 = tf.train.Saver({"fc3": vgg.fc3w, "fcb3": vgg.fc3b})
-    saver3.restore(sess,  weight_path+"/oribin800_"+str(attn2ori)+".ckpt")
+    saver3.restore(sess,  weight_path+'/ori_catbins'+"/oribin800_"+str(attn2ori)+".ckpt")
     tplabs=np.ones((bsize,1))
     tnlabs=np.zeros((bsize,1))
     TPscore=np.zeros((len(astrgs))); TNscore=np.zeros((len(astrgs)));
