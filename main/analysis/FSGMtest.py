@@ -1,4 +1,6 @@
 import numpy as np
+import matplotlib
+matplotlib.use('Agg')  # Set the backend to non-interactive
 import matplotlib.pyplot as plt
 import pickle
 import matplotlib as mpl
@@ -10,7 +12,7 @@ def later_effect(lattn,TCs):
  allcoefslist=[]
  layinds=[0,0,1,1,2,2,2,3,3,3,4,4,4]; ilayi=[0,1,0,1,0,1,2,0,1,2,0,1,2]
 
- with open("featvecs_ORIgrats40Astd.txt", "rb") as fp: #ori tuning curves file (on dryad)
+ with open("/scratch/hy2611/CNN_attention/Data/VGG16/ori_TCGrads/featvecs_ORIgrats40Astd.txt", "rb") as fp: #ori tuning curves file (on dryad)
  	  oriTCs = pickle.load(fp)  
 
 
@@ -82,6 +84,7 @@ for li in lays:
 	for vi in range(2):
 		plt.plot(np.arange(13)+1,vals[:,vi],ls=lss[vi],color=cols[lii],alpha=alp,linewidth=3);
 
-plt.xlabel('Layer Recorded From'); plt.ylabel('Fit Values')
-plt.show()
-
+plt.xlabel('Layer Recorded From')
+plt.ylabel('Fit Values')
+plt.savefig('layer_effects_plot.png')  # Save plot to file instead of displaying
+plt.close()  # Close the figure to free memory

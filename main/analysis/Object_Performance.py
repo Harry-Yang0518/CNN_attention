@@ -1,4 +1,6 @@
 import numpy as np
+import matplotlib
+matplotlib.use('Agg')  # Set the backend to non-interactive
 import matplotlib.pyplot as plt
 
 data_path=''
@@ -12,8 +14,8 @@ ma=1; bd=1
 for ci in range(20):
 	#plt.subplot(4,5,ci+1)
 	for li in range(13):
-		savstr='LRcatattn'+str(ci)+'c_'+str(li)+'a'+str(ma)+'bd'+str(bd)+'_im'+str(2)+'sCOMB.npz'
-		savstrb='LRGRADcatattn'+str(ci)+'c_'+str(li)+'a'+str(ma)+'bd'+str(bd)+'_im'+str(2)+'.npz'#these need to be renamed according to the format in the Object_Performance.py if you've run the simulation yourself rather than downloaded performance data from dryad
+		savstr='/scratch/hy2611/CNN_attention/Data/VGG16/objperf/LRcatattn'+str(ci)+'c_'+str(li)+'a'+str(ma)+'bd'+str(bd)+'_im'+str(2)+'sCOMB.npz'
+		savstrb='/scratch/hy2611/CNN_attention/Data/VGG16/objperf/LRGRADcatattn'+str(ci)+'c_'+str(li)+'a'+str(ma)+'bd'+str(bd)+'_im'+str(2)+'.npz'#these need to be renamed according to the format in the Object_Performance.py if you've run the simulation yourself rather than downloaded performance data from dryad
 
 		F=np.load(data_path+savstr); TP=F['arr_0']; TN=F['arr_1']
 		BLperf=((TP+TN)/2)[0]
