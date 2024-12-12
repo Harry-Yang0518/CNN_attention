@@ -16,6 +16,7 @@ sif_path=/scratch/$USER//CNN_attention/environment/cuda11.4.2-cudnn8.2.4-devel-u
 
 # start running
 singularity exec --nv --overlay ${ext3_path}:ro ${sif_path} /bin/bash -c "
+source ~/.bashrc
 conda activate /ext3/envs/vgg16_env
 
 
