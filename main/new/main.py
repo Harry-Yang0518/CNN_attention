@@ -10,15 +10,15 @@ def parse_args():
     parser = argparse.ArgumentParser(description='VGG16 Attention Analysis')
     parser.add_argument('--imtype', type=int, default=1, choices=[1, 2, 3],
                       help='Image type: 1=merge, 2=array, 3=test')
-    parser.add_argument('--category', type=int, default=1,
+    parser.add_argument('--category', type=int, default=7,
                       help='Object category to attend to (0-19)')
-    parser.add_argument('--layer', type=int, default=12,
+    parser.add_argument('--layer', type=int, default=0,
                       help='Layer to apply attention (0-12, >12 for all layers)')
-    parser.add_argument('--attention_type', type=str, default='GRADs',
+    parser.add_argument('--attention_type', type=str, default='TCs',
                       choices=['TCs', 'GRADs'], help='Type of attention to apply')
-    parser.add_argument('--batch_size', type=int, default=5,
+    parser.add_argument('--batch_size', type=int, default=50,
                       help='Batch size for processing') ###set to 75 when run experiment, 10 when debugging
-    parser.add_argument('--max_images', type=int, default=10,
+    parser.add_argument('--max_images', type=int, default=750,
                       help='Maximum number of images to load') ###set to 1425 when run experiment, 10/20 when debugging
     return parser.parse_args()
 
@@ -86,7 +86,7 @@ def main():
         return
     
     # Setup attention parameters
-    attention_strengths = np.arange(0, 1, 0.5)
+    attention_strengths = np.array([0, 0.2, 0.4, 0.6, 0.8, 1.0])
     layer_mask = layer_attention.get_layer_mask(args.layer)
     
     # Create save directory for results
@@ -228,8 +228,23 @@ def main():
     }
 
     # Add debug prints
+    # Before visualization
+    print("Performance metric shape:", metrics['performance'].shape)
+    print("Criteria metric shape:", metrics['criteria'].shape)
+    print("Sensitivity metric shape:", metrics['sensitivity'].shape)
+    print("Performance values:", metrics['performance'])
+    print("Criteria values:", metrics['criteria'])
+    print("Sensitivity values:", metrics['sensitivity'])
+
+    # Ensure all arrays are the right shape before plotting
     for key in metrics:
-        print("{0} shape: {1}".format(key, metrics[key].shape))
+        metrics[key] = np.array(metrics[key])
+        if metrics[key].shape != attention_strengths.shape:
+            print("Warning: Reshaping {0} from {1} to match attention_strengths shape {2}".format(
+                key, metrics[key].shape, attention_strengths.shape))
+            # Broadcast scalar to array if needed
+            if metrics[key].size == 1:
+                metrics[key] = np.full_like(attention_strengths, metrics[key][0])
 
     # Visualize results
     print("Generating visualizations...")

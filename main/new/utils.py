@@ -43,21 +43,35 @@ class AttentionAnalyzer(object):  # Changed to explicit (object) inheritance for
         """Calculate performance metrics from response data"""
         tp_scores = np.array(results['tp_scores'])
         tn_scores = np.array(results['tn_scores'])
+        
         print("Debug - TP scores: {0}".format(tp_scores))
         print("Debug - TN scores: {0}".format(tn_scores))
+        
+        # Make sure scores are 1D arrays
+        if tp_scores.ndim > 1:
+            tp_scores = np.mean(tp_scores, axis=1)
+        if tn_scores.ndim > 1:
+            tn_scores = np.mean(tn_scores, axis=1)
+        
         # Clip scores to valid probability range
         tp_scores = np.clip(tp_scores, 0.001, 0.999)  # Avoid infinite values in ppf
         tn_scores = np.clip(tn_scores, 0.001, 0.999)  # Avoid infinite values in ppf
         
+        # Calculate metrics while preserving shape
         metrics = {
-            'performance': (tp_scores + (1-tn_scores))/2,
-            'criteria': -0.5 * (norm.ppf(np.mean(tp_scores)) + norm.ppf(np.mean(tn_scores))),
-            'sensitivity': norm.ppf(np.mean(tp_scores)) - norm.ppf(np.mean(tn_scores))
+            'performance': np.array((tp_scores + (1-tn_scores))/2),
+            'criteria': np.array([-0.5 * (norm.ppf(tp) + norm.ppf(tn)) for tp, tn in zip(tp_scores, tn_scores)]),
+            'sensitivity': np.array([norm.ppf(tp) - norm.ppf(tn) for tp, tn in zip(tp_scores, tn_scores)])
         }
         
         # Replace any remaining NaN or inf values with zeros
         for key in metrics:
             metrics[key] = np.nan_to_num(metrics[key])
+        
+        # Ensure all metrics have same shape as attention_strengths
+        for key in metrics:
+            if np.isscalar(metrics[key]):
+                metrics[key] = np.array([metrics[key]])
         
         return metrics
     
