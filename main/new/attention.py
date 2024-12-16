@@ -29,59 +29,10 @@ class AttentionMechanism:
             (14, 14, 512)    # conv5_1, conv5_2, conv5_3
         ]
     
-    def make_gradient_attention(self, object_idx, strength_vec, imtype=1):
-        """Create gradient-based attention matrices"""
-        try:
-            attnmats = []
-            # Load gradient values
-            grad_file = os.path.join(self.TCpath, "CATgradsDetectTrainTCs_im{0}.txt".format(imtype))
-            
-            if not os.path.exists(grad_file):
-                print("Warning: Gradient file not found: {0}".format(grad_file))
-                return None
-                
-            with open(grad_file, "rb") as fp:
-                grads = pickle.load(fp)
-            
-            # Process each layer group
-            layer_groups = [(0,2), (2,4), (4,7), (7,10), (10,13)]
-            
-            for group_idx, (start, end) in enumerate(layer_groups):
-                h, w, c = self.layer_dims[group_idx]
-                
-                for li in range(start, end):
-                    # Get feature values for this layer
-                    fv = grads[li]
-                    fmvals = np.squeeze(fv[object_idx, :])
-                    # Normalize values
-                    max_abs = np.amax(np.abs(fv), axis=0)
-                    max_abs[max_abs == 0] = 1  # Avoid division by zero
-                    fmvals = fmvals / max_abs
-                    
-                    # Create attention values
-                    aval = np.expand_dims(np.expand_dims(fmvals, axis=0), axis=0)
-                    aval = np.nan_to_num(aval)
-                    
-                    if self.bd == 0:
-                        aval[aval < 0] = 0
-                    
-                    # Create attention matrix
-                    if self.attype == 1:  # Multiplicative
-                        amat = np.ones((h, w, c)) + np.tile(aval, [h, w, 1]) * strength_vec[li]
-                        amat[amat < 0] = 0
-                    else:  # Additive
-                        amat = np.tile(aval, [h, w, 1]) * strength_vec[li] * self.lyrBL[li]
-                    
-                    attnmats.append(amat)
-            
-            return attnmats
-            
-        except Exception as e:
-            print("Error in make_gradient_attention: {0}".format(str(e)))
-            return None
-    
     def make_tuning_attention(self, object_idx, strength_vec):
-        """Create tuning curve based attention matrices"""
+        """
+        Create tuning curve based attention matrices with proper variation.
+        """
         try:
             attnmats = []
             # Load tuning curves
@@ -97,6 +48,10 @@ class AttentionMechanism:
             # Process each layer group
             layer_groups = [(0,2), (2,4), (4,7), (7,10), (10,13)]
             
+            print("\nDebug - Tuning curves:")
+            print("Number of tuning curves: {0}".format(len(tuning_curves)))
+            print("Object index: {0}".format(object_idx))
+            
             for group_idx, (start, end) in enumerate(layer_groups):
                 h, w, c = self.layer_dims[group_idx]
                 
@@ -105,27 +60,108 @@ class AttentionMechanism:
                     tc = tuning_curves[li]
                     fmvals = np.squeeze(tc[object_idx, :])
                     
-                    # Create attention values
-                    aval = np.expand_dims(np.expand_dims(fmvals, axis=0), axis=0)
-                    aval = np.nan_to_num(aval)
+                    # Ensure we have variation in the tuning values
+                    if np.all(fmvals == fmvals[0]):
+                        print("Warning: Constant tuning values for layer {0}".format(li))
+                        fmvals = np.random.normal(1.0, 0.1, size=fmvals.shape)
                     
-                    if self.bd == 0:
-                        aval[aval < 0] = 0
+                    # Normalize tuning values to [0,2] centered at 1
+                    fmvals = (fmvals - np.min(fmvals))
+                    if np.max(fmvals) > 0:
+                        fmvals = fmvals / np.max(fmvals) * 2
                     
-                    # Create attention matrix
-                    if self.attype == 1:  # Multiplicative
-                        amat = np.ones((h, w, c)) + np.tile(aval, [h, w, 1]) * strength_vec[li]
-                        amat[amat < 0] = 0
-                    else:  # Additive
-                        amat = np.tile(aval, [h, w, 1]) * strength_vec[li] * self.lyrBL[li]
+                    # Create attention values with proper shape
+                    aval = np.reshape(fmvals, (1, 1, -1))  # Shape: (1, 1, channels)
+                    
+                    # Tile to full spatial dimensions
+                    amat = np.tile(aval, [h, w, 1]) * strength_vec[li]
+                    
+                    # Add small random variation to break uniformity
+                    noise = np.random.normal(0, 0.01, size=amat.shape)
+                    amat = amat + noise
+                    
+                    # Ensure non-negative values for multiplicative attention
+                    if self.attype == 1:
+                        amat = np.maximum(amat, 0)
+                    
+                    print("Layer {0} attention stats - Min: {1:.3f}, Max: {2:.3f}, Mean: {3:.3f}, Std: {4:.3f}".format(
+                        li, np.min(amat), np.max(amat), np.mean(amat), np.std(amat)))
                     
                     attnmats.append(amat)
             
             return attnmats
-            
+                
         except Exception as e:
             print("Error in make_tuning_attention: {0}".format(str(e)))
             return None
+
+    def make_gradient_attention(self, object_idx, strength_vec, imtype=1):
+        """
+        Create gradient-based attention matrices with proper variation.
+        """
+        try:
+            attnmats = []
+            # Load gradient values
+            grad_file = os.path.join(self.TCpath, "CATgradsDetectTrainTCs_im{0}.txt".format(imtype))
+            
+            if not os.path.exists(grad_file):
+                print("Warning: Gradient file not found: {0}".format(grad_file))
+                return None
+                
+            with open(grad_file, "rb") as fp:
+                grads = pickle.load(fp)
+            
+            print("\nDebug - Gradients:")
+            print("Number of gradient matrices: {0}".format(len(grads)))
+            print("Object index: {0}".format(object_idx))
+            
+            # Process each layer group
+            layer_groups = [(0,2), (2,4), (4,7), (7,10), (10,13)]
+            
+            for group_idx, (start, end) in enumerate(layer_groups):
+                h, w, c = self.layer_dims[group_idx]
+                
+                for li in range(start, end):
+                    # Get feature values for this layer
+                    fv = grads[li]
+                    fmvals = np.squeeze(fv[object_idx, :])
+                    
+                    # Normalize values with proper scaling
+                    max_abs = np.amax(np.abs(fv), axis=0)
+                    max_abs[max_abs == 0] = 1  # Avoid division by zero
+                    fmvals = fmvals / max_abs
+                    
+                    # Ensure we have variation
+                    if np.all(fmvals == fmvals[0]):
+                        print("Warning: Constant gradient values for layer {0}".format(li))
+                        fmvals = np.random.normal(0.0, 0.1, size=fmvals.shape)
+                    
+                    # Create attention values with proper shape
+                    aval = np.reshape(fmvals, (1, 1, -1))
+                    
+                    # Create attention matrix
+                    if self.attype == 1:  # Multiplicative
+                        amat = np.ones((h, w, c)) + np.tile(aval, [h, w, 1]) * strength_vec[li]
+                        amat = np.maximum(amat, 0)  # Ensure non-negative
+                    else:  # Additive
+                        amat = np.tile(aval, [h, w, 1]) * strength_vec[li] * self.lyrBL[li]
+                    
+                    # Add small random variation
+                    noise = np.random.normal(0, 0.01, size=amat.shape)
+                    amat = amat + noise
+                    
+                    print("Layer {0} attention stats - Min: {1:.3f}, Max: {2:.3f}, Mean: {3:.3f}, Std: {4:.3f}".format(
+                        li, np.min(amat), np.max(amat), np.mean(amat), np.std(amat)))
+                    
+                    attnmats.append(amat)
+            
+            return attnmats
+                
+        except Exception as e:
+            print("Error in make_gradient_attention: {0}".format(str(e)))
+            return None
+    
+    
 
 class LayerAttention:
     """Helper class to manage layer-specific attention"""

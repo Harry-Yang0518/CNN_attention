@@ -6,14 +6,14 @@ import argparse
 from vgg_16 import *
 from attention import *
 from utils import *
-
+##conda activate /ext3/envs/vgg16_env
 def parse_args():
     parser = argparse.ArgumentParser(description='VGG16 Attention Analysis')
     parser.add_argument('--imtype', type=int, default=1, choices=[1, 2, 3],
                       help='Image type: 1=merge, 2=array, 3=test')
-    parser.add_argument('--category', type=int, default=7,
+    parser.add_argument('--category', type=int, default=19,
                       help='Object category to attend to (0-19)')
-    parser.add_argument('--layer', type=int, default=0,
+    parser.add_argument('--layer', type=int, default=3,
                       help='Layer to apply attention (0-12, >12 for all layers)')
     parser.add_argument('--attention_type', type=str, default='TCs',
                       choices=['TCs', 'GRADs'], help='Type of attention to apply')
@@ -159,12 +159,14 @@ def main():
             return
     
     # Process batches
+    # In main() function, replace the batch processing section with:
+
+    # Process batches
     print("\nProcessing data...")
     n_batches = (len(pos_images) + args.batch_size - 1) // args.batch_size
     
     # Setup attention parameters with validation
-    attention_strengths = np.array([0.2, 0.7])
-    #attention_strengths = np.array([0, 0.2])
+    attention_strengths = np.array([0.0,0.2,0.4,0.6,0.8,1.0])
     if not isinstance(attention_strengths, np.ndarray) or len(attention_strengths) == 0:
         print("Error: Invalid attention strengths array")
         return
@@ -194,7 +196,7 @@ def main():
             tplabs = np.full((args.batch_size, 1), args.category, dtype=np.int32)
             
             # Get negative examples with validation
-            other_categories = list(range(20))
+            other_categories = range(20)
             other_categories.remove(args.category)
             neg_category = np.random.choice(other_categories)
             try:
@@ -211,22 +213,39 @@ def main():
                 print("Negative category: {0}".format(neg_category))
                 continue
             
-            # Generate attention maps with detailed error checking
-            if args.attention_type == 'TCs':
-                print("Generating tuning curve attention maps...")
-                attention_maps = attention.make_tuning_attention(args.category, strength_vec)
-            else:
-                print("Generating gradient attention maps...")
-                attention_maps = attention.make_gradient_attention(args.category, strength_vec)
-            
-            if attention_maps is None or len(attention_maps) == 0:
-                print("Warning: No attention maps generated")
-                print("Attention type: {0}".format(args.attention_type))
-                print("Category: {0}".format(args.category))
-                print("Strength vector: {0}".format(strength_vec))
+            # Generate attention maps with batch dimension
+            try:
+                if args.attention_type == 'TCs':
+                    print("Generating tuning curve attention maps...")
+                    attention_maps = make_attention_maps_with_batch(
+                        attention, 
+                        args.category, 
+                        strength_vec,
+                        args.batch_size
+                    )
+                else:
+                    print("Generating gradient attention maps...")
+                    attention_maps = make_attention_maps_with_batch(
+                        attention, 
+                        args.category, 
+                        strength_vec,
+                        args.batch_size
+                    )
+                
+                debug_print_shapes(tp_batch, attention_maps, "After attention map generation")
+                
+                if attention_maps is None or len(attention_maps) == 0:
+                    print("Warning: No attention maps generated")
+                    print("Attention type: {0}".format(args.attention_type))
+                    print("Category: {0}".format(args.category))
+                    print("Strength vector: {0}".format(strength_vec))
+                    continue
+                
+                print("Successfully generated {0} attention maps".format(len(attention_maps)))
+                
+            except Exception as e:
+                print("Error generating attention maps: {0}".format(str(e)))
                 continue
-            
-            print("Successfully generated {0} attention maps".format(len(attention_maps)))
             
             # 1. Compute saliency maps
             print("Computing saliency maps...")
@@ -234,19 +253,26 @@ def main():
             if saliency_maps is None:
                 print("Warning: Failed to generate saliency maps")
                 continue
+            debug_print_shapes(saliency_maps, attention_maps, "After saliency computation")
             print("Successfully generated saliency maps")
             
-            # 2. Compare saliency and attention
+            # 2. Compare saliency and attention for each layer
             print("Comparing saliency and attention maps...")
             try:
-                print_debug_info(saliency_maps, attention_maps[min(args.layer, len(attention_maps)-1)], args.layer)
-                comparison_metrics = compare_saliency_attention(
-                    saliency_maps, 
-                    attention_maps[min(args.layer, len(attention_maps)-1)]
-                )
-                print("Comparison metrics computed:")
-                for metric_name, value in comparison_metrics.iteritems():
-                    print("  {0}: {1:.4f}".format(metric_name, value))
+                all_layer_metrics = {}
+                for layer_idx in xrange(len(attention_maps)):
+                    print("\nAnalyzing layer {0}".format(layer_idx))
+                    print_debug_info(saliency_maps, attention_maps[layer_idx], layer_idx)
+                    metrics = compare_saliency_attention(
+                        saliency_maps, 
+                        attention_maps,
+                        layer_idx
+                    )
+                    all_layer_metrics['layer_{0}'.format(layer_idx)] = metrics
+                    print("Layer {0} metrics:".format(layer_idx))
+                    for metric_name, value in metrics.iteritems():
+                        print("  {0}: {1:.4f}".format(metric_name, value))
+                
             except Exception as e:
                 print("Error computing comparison metrics: {0}".format(str(e)))
                 continue
@@ -270,7 +296,7 @@ def main():
             
             # 4. Visualize comparison
             print("Generating visualizations...")
-            for img_idx in xrange(len(tp_batch)):
+            for img_idx in xrange(min(len(tp_batch), args.batch_size)):
                 try:
                     save_path = os.path.join(
                         save_dir, 
@@ -279,11 +305,12 @@ def main():
                         )
                     )
                     visualize_comparison(
-                        tp_batch[img_idx],
-                        saliency_maps[img_idx],
-                        [amap[img_idx] for amap in attention_maps],
-                        comparison_metrics,
-                        save_path
+                        tp_batch,
+                        saliency_maps,
+                        attention_maps,
+                        all_layer_metrics['layer_{0}'.format(args.layer)],  # Use metrics from specified layer
+                        save_path,
+                        batch_idx=img_idx
                     )
                     print("Saved visualization for image {0}".format(img_idx))
                 except Exception as e:
@@ -296,7 +323,7 @@ def main():
                     'strength': strength,
                     'saliency_maps': saliency_maps,
                     'attention_maps': attention_maps,
-                    'comparison_metrics': comparison_metrics,
+                    'comparison_metrics': all_layer_metrics,
                     'attention_results': attention_results
                 }
                 

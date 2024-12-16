@@ -3,98 +3,76 @@ import numpy as np
 from scipy.stats import norm
 import tensorflow as tf
 
-class AttentionAnalyzer(object):  # Changed to explicit (object) inheritance for Python 2.7
+class AttentionAnalyzer(object):
     """Analyzer for attention effects in VGG16 network"""
     def __init__(self, vgg_model, session):
         self.vgg = vgg_model
         self.sess = session
     
     def analyze_attention_effects(self, tp_batch, tn_batch, attnmats, astrgs):
-        """Analyze attention effects across layers"""
+        """
+        Analyze attention effects across layers with proper batch handling
+        
+        Args:
+            tp_batch: true positive batch of images
+            tn_batch: true negative batch of images
+            attnmats: list of attention matrices
+            astrgs: attention strengths
+        """
         results = {
             'tp_responses': [],
             'tn_responses': [],
             'tp_scores': [],
             'tn_scores': [],
-            'strength': astrgs  # Added strength to results
+            'strength': astrgs
         }
         
         # Get baseline responses (no attention)
+        print("Computing baseline responses...")
         baseline_dict = self._create_base_feed_dict(tp_batch)
         tp_baseline = self.sess.run(self.vgg.get_all_layers(), feed_dict=baseline_dict)
         
+        # Remove batch dimension from attention matrices if present
+        processed_attnmats = []
+        for amat in attnmats:
+            if len(amat.shape) == 4:  # If has batch dimension
+                # Use the first batch item as representative attention
+                processed_attnmats.append(amat[0])
+            else:
+                processed_attnmats.append(amat)
+        
+        print("Attention matrix shapes after processing:")
+        for i, amat in enumerate(processed_attnmats):
+            print("Layer {}: {}".format(i, amat.shape))
+        
         # Get responses with attention
-        feed_dict = self._create_feed_dict(tp_batch, attnmats)
-        tp_responses = self.sess.run(self.vgg.get_all_layers(), feed_dict=feed_dict)
-        tp_score = self.sess.run(self.vgg.guess, feed_dict=feed_dict)
-        
-        feed_dict = self._create_feed_dict(tn_batch, attnmats)
-        tn_responses = self.sess.run(self.vgg.get_all_layers(), feed_dict=feed_dict)
-        tn_score = self.sess.run(self.vgg.guess, feed_dict=feed_dict)
-        
-        results['tp_responses'].append(tp_responses)
-        results['tn_responses'].append(tn_responses)
-        results['tp_scores'].append(tp_score)
-        results['tn_scores'].append(tn_score)
+        print("Computing responses with attention...")
+        try:
+            feed_dict = self._create_feed_dict(tp_batch, processed_attnmats)
+            tp_responses = self.sess.run(self.vgg.get_all_layers(), feed_dict=feed_dict)
+            tp_score = self.sess.run(self.vgg.guess, feed_dict=feed_dict)
+            
+            feed_dict = self._create_feed_dict(tn_batch, processed_attnmats)
+            tn_responses = self.sess.run(self.vgg.get_all_layers(), feed_dict=feed_dict)
+            tn_score = self.sess.run(self.vgg.guess, feed_dict=feed_dict)
+            
+            results['tp_responses'].append(tp_responses)
+            results['tn_responses'].append(tn_responses)
+            results['tp_scores'].append(tp_score)
+            results['tn_scores'].append(tn_score)
+            
+        except Exception as e:
+            print("Error in feed_dict: ", e)
+            print("Placeholder shapes:")
+            placeholders = self.vgg.get_attention_placeholders()
+            for i, p in enumerate(placeholders):
+                print("Placeholder {}: {}".format(i, p.get_shape()))
+            print("Attention matrix shapes:")
+            for i, a in enumerate(processed_attnmats):
+                print("Attention {}: {}".format(i, a.shape))
+            raise
         
         return results
-    
-    def calculate_performance_metrics(self, results):
-        """Calculate performance metrics from response data"""
-        tp_scores = np.array(results['tp_scores'])
-        tn_scores = np.array(results['tn_scores'])
-        
-        print("Debug - TP scores: {0}".format(tp_scores))
-        print("Debug - TN scores: {0}".format(tn_scores))
-        
-        # Make sure scores are 1D arrays
-        if tp_scores.ndim > 1:
-            tp_scores = np.mean(tp_scores, axis=1)
-        if tn_scores.ndim > 1:
-            tn_scores = np.mean(tn_scores, axis=1)
-        
-        # Clip scores to valid probability range
-        tp_scores = np.clip(tp_scores, 0.001, 0.999)  # Avoid infinite values in ppf
-        tn_scores = np.clip(tn_scores, 0.001, 0.999)  # Avoid infinite values in ppf
-        
-        # Calculate metrics while preserving shape
-        metrics = {
-            'performance': np.array((tp_scores + (1-tn_scores))/2),
-            'criteria': np.array([-0.5 * (norm.ppf(tp) + norm.ppf(tn)) for tp, tn in zip(tp_scores, tn_scores)]),
-            'sensitivity': np.array([norm.ppf(tp) - norm.ppf(tn) for tp, tn in zip(tp_scores, tn_scores)])
-        }
-        
-        # Replace any remaining NaN or inf values with zeros
-        for key in metrics:
-            metrics[key] = np.nan_to_num(metrics[key])
-        
-        # Ensure all metrics have same shape as attention_strengths
-        for key in metrics:
-            if np.isscalar(metrics[key]):
-                metrics[key] = np.array([metrics[key]])
-        
-        return metrics
-    
-    def analyze_layer_effects(self, responses, baseline_responses):
-        """Analyze attention effects in each layer"""
-        layer_effects = {}
-        
-        for layer_idx, (resp, base) in enumerate(zip(responses, baseline_responses)):
-            # Add small epsilon to avoid division by zero
-            epsilon = 1e-10
-            # Calculate modulation indices with safety checks
-            modulation = np.divide(resp, base + epsilon)
-            # Clip extreme values
-            modulation = np.clip(modulation, 0.0, 1000.0)  # Reasonable max value
-            
-            layer_effects['layer_{0}'.format(layer_idx+1)] = {
-                'mean_modulation': np.nanmean(modulation),  # Use nanmean to handle NaN values
-                'std_modulation': np.nanstd(modulation),    # Use nanstd to handle NaN values
-                'max_modulation': np.nanmax(modulation),    # Use nanmax to handle NaN values
-                'raw_effects': modulation
-            }
-        
-        return layer_effects
     
     def _create_base_feed_dict(self, batch):
         """Create feed dictionary with no attention"""
@@ -103,6 +81,8 @@ class AttentionAnalyzer(object):  # Changed to explicit (object) inheritance for
         
         for placeholder in placeholders:
             shape = placeholder.get_shape().as_list()
+            if None in shape:
+                shape = [s if s is not None else 1 for s in shape]
             feed_dict[placeholder] = np.ones(shape)
             
         return feed_dict
@@ -112,10 +92,49 @@ class AttentionAnalyzer(object):  # Changed to explicit (object) inheritance for
         placeholders = self.vgg.get_attention_placeholders()
         feed_dict = {self.vgg.imgs: batch}
         
+        print("\nCreating feed dict:")
         for placeholder, attnmat in zip(placeholders, attnmats):
+            expected_shape = placeholder.get_shape().as_list()
+            print("Placeholder shape: {}".format(expected_shape))
+            print("Attention matrix shape: {}".format(attnmat.shape))
+            
+            # Ensure attention matrix matches placeholder shape
+            if len(expected_shape) != len(attnmat.shape):
+                print("Shape mismatch - adjusting attention matrix")
+                if len(expected_shape) < len(attnmat.shape):
+                    # Remove batch dimension if present
+                    attnmat = attnmat[0]
+                elif len(expected_shape) > len(attnmat.shape):
+                    # Add missing dimensions
+                    for _ in range(len(expected_shape) - len(attnmat.shape)):
+                        attnmat = np.expand_dims(attnmat, 0)
+            
             feed_dict[placeholder] = attnmat
             
         return feed_dict
+
+def make_attention_maps_with_batch(attention, category_idx, strength_vec, batch_size):
+    """Modified attention map creation to match placeholder shapes"""
+    if attention.attype == 1:  # Multiplicative attention
+        attention_maps = []
+        layer_groups = [(0,2), (2,4), (4,7), (7,10), (10,13)]
+        
+        for group_idx, (start, end) in enumerate(layer_groups):
+            h, w, c = attention.layer_dims[group_idx]
+            
+            for li in range(start, end):
+                # Get base attention matrix
+                amat = attention.make_tuning_attention(category_idx, strength_vec)
+                if amat is None:
+                    continue
+                
+                # Don't include batch dimension in attention maps
+                attention_maps.append(amat[li])
+                
+        return attention_maps
+    else:
+        # Handle additive attention similarly
+        return attention.make_tuning_attention(category_idx, strength_vec)
 
 # utils.py
 import numpy as np
@@ -158,14 +177,53 @@ def compute_performance_metrics(tp_scores, tn_scores):
 
     return performance, criteria, sensitivity
 
-def compare_saliency_attention(saliency_map, attention_map):
+def debug_print_shapes(saliency_map, attention_maps, msg=""):
+    """Helper function to print shapes at various stages"""
+    print("\n=== Debug Shapes {} ===".format(msg))
+    print("Saliency map shape: {}".format(saliency_map.shape))
+    for i, amap in enumerate(attention_maps):
+        print("Attention map {} shape: {}".format(i, amap.shape))
+
+def make_attention_maps_with_batch(attention, category_idx, strength_vec, batch_size):
+    """Modified attention map creation to ensure proper batch dimension"""
+    if attention.attype == 1:  # Multiplicative attention
+        attention_maps = []
+        layer_groups = [(0,2), (2,4), (4,7), (7,10), (10,13)]
+        
+        for group_idx, (start, end) in enumerate(layer_groups):
+            h, w, c = attention.layer_dims[group_idx]
+            
+            for li in range(start, end):
+                # Create base attention matrix
+                amat = attention.make_tuning_attention(category_idx, strength_vec)
+                if amat is None:
+                    continue
+                    
+                # Expand to include batch dimension
+                amat_batch = np.tile(amat[li][np.newaxis, :, :, :], [batch_size, 1, 1, 1])
+                attention_maps.append(amat_batch)
+                
+        return attention_maps
+    else:
+        # Handle additive attention similarly
+        return attention.make_tuning_attention(category_idx, strength_vec)
+
+def compare_saliency_attention(saliency_map, attention_maps, layer_idx):
     """
-    Compare a saliency map to an attention map and compute similarity metrics.
-    Modified to handle small image dimensions.
+    Compare a saliency map to an attention map with fixed correlation and IoU calculations.
+    
+    Args:
+        saliency_map: numpy array of saliency values
+        attention_maps: list of attention maps
+        layer_idx: index of the layer to compare
     """
     print("Debug - Input shapes:")
     print("Saliency map shape: {0}".format(saliency_map.shape))
-    print("Attention map shape: {0}".format(attention_map.shape))
+    print("Number of attention maps: {0}".format(len(attention_maps)))
+    print("Selected layer attention map shape: {0}".format(attention_maps[layer_idx].shape))
+    
+    # Get the attention map for the specified layer
+    attention_map = attention_maps[layer_idx]
     
     # Ensure both maps are 2D
     if len(saliency_map.shape) > 2:
@@ -173,103 +231,140 @@ def compare_saliency_attention(saliency_map, attention_map):
         if len(saliency_map.shape) == 3:
             saliency_map = np.mean(saliency_map, axis=-1)
         elif len(saliency_map.shape) == 4:
-            saliency_map = np.mean(saliency_map, axis=(0, -1))
+            saliency_map = np.mean(np.mean(saliency_map, axis=0), axis=-1)
     
     if len(attention_map.shape) > 2:
         print("Reducing attention map dimensions...")
         if len(attention_map.shape) == 3:
             attention_map = np.mean(attention_map, axis=-1)
         elif len(attention_map.shape) == 4:
-            attention_map = np.mean(attention_map, axis=(0, -1))
+            attention_map = np.mean(np.mean(attention_map, axis=0), axis=-1)
     
     print("After reduction:")
     print("Saliency map shape: {0}".format(saliency_map.shape))
     print("Attention map shape: {0}".format(attention_map.shape))
     
-    # Ensure same spatial dimensions and resize to a minimum size for SSIM
-    min_size = 16  # Minimum size for SSIM calculation
-    if saliency_map.shape != attention_map.shape or min(saliency_map.shape) < min_size:
-        print("Resizing maps...")
-        # Calculate target shape (ensure minimum size)
-        if saliency_map.shape != attention_map.shape:
-            target_shape = (max(min_size, min(saliency_map.shape[0], attention_map.shape[0])),
-                          max(min_size, min(saliency_map.shape[1], attention_map.shape[1])))
-        else:
-            target_shape = (max(min_size, saliency_map.shape[0]),
-                          max(min_size, saliency_map.shape[1]))
-        
-        # Use simple interpolation
-        saliency_map = cv2.resize(saliency_map.astype(np.float32), (target_shape[1], target_shape[0]))
-        attention_map = cv2.resize(attention_map.astype(np.float32), (target_shape[1], target_shape[0]))
-        
-        print("After resizing:")
-        print("Saliency map shape: {0}".format(saliency_map.shape))
-        print("Attention map shape: {0}".format(attention_map.shape))
-
-    # Normalize both maps to [0,1]
-    s_min, s_max = saliency_map.min(), saliency_map.max()
-    a_min, a_max = attention_map.min(), attention_map.max()
-
-    if s_max > s_min:
-        saliency_norm = (saliency_map - s_min) / (s_max - s_min)
-    else:
-        saliency_norm = saliency_map
-
-    if a_max > a_min:
-        attention_norm = (attention_map - a_min) / (a_max - a_min)
-    else:
-        attention_norm = attention_map
-
-    # Calculate metrics
-    correlation, _ = pearsonr(saliency_norm.flatten(), attention_norm.flatten())
-
-    # Prepare images for SSIM
-    saliency_uint8 = (saliency_norm * 255).astype(np.uint8)
-    attention_uint8 = (attention_norm * 255).astype(np.uint8)
+    # Ensure same spatial dimensions with minimum size
+    target_shape = (max(7, min(saliency_map.shape[0], attention_map.shape[0])),
+                   max(7, min(saliency_map.shape[1], attention_map.shape[1])))
     
-    # Calculate SSIM with adjusted window size
+    # Resize both maps to target shape
+    saliency_map = cv2.resize(saliency_map.astype(np.float32), 
+                            (target_shape[1], target_shape[0]))
+    attention_map = cv2.resize(attention_map.astype(np.float32), 
+                             (target_shape[1], target_shape[0]))
+    
+    print("After resizing:")
+    print("Target shape: {0}".format(target_shape))
+    
+    # Robust normalization with output range checking
+    def normalize_map(x):
+        x_min, x_max = np.min(x), np.max(x)
+        if x_max == x_min:
+            return np.ones_like(x) * 0.5  # Return uniform map if constant
+        x_norm = (x - x_min) / (x_max - x_min)
+        # Ensure no values outside [0,1]
+        return np.clip(x_norm, 0, 1)
+    
+    saliency_norm = normalize_map(saliency_map)
+    attention_norm = normalize_map(attention_map)
+    
+    print("Normalization check:")
+    print("Saliency map range: [{:.4f}, {:.4f}]".format(
+        np.min(saliency_norm), np.max(saliency_norm)))
+    print("Attention map range: [{:.4f}, {:.4f}]".format(
+        np.min(attention_norm), np.max(attention_norm)))
+    
+    # Calculate correlation only if both maps have variance
+    s_std = np.std(saliency_norm)
+    a_std = np.std(attention_norm)
+    
+    if s_std > 0 and a_std > 0:
+        correlation, _ = pearsonr(saliency_norm.flatten(), attention_norm.flatten())
+        print("Valid correlation calculated: {:.4f}".format(correlation))
+    else:
+        correlation = 0.0
+        print("Zero correlation due to constant map(s)")
+        print("Std devs - Saliency: {:.4f}, Attention: {:.4f}".format(s_std, a_std))
+    
+    # Calculate IoU with adaptive thresholding
+    def calculate_iou_adaptive(sal_map, att_map):
+        # Find connected components in both maps
+        sal_thresh = np.mean(sal_map) + np.std(sal_map)
+        att_thresh = np.mean(att_map) + np.std(att_map)
+        
+        # Binary masks
+        sal_bin = sal_map > sal_thresh
+        att_bin = att_map > att_thresh
+        
+        # Ensure we have some active pixels
+        if not np.any(sal_bin) or not np.any(att_bin):
+            sal_bin = sal_map > np.percentile(sal_map, 75)
+            att_bin = att_map > np.percentile(att_map, 75)
+        
+        intersection = np.logical_and(sal_bin, att_bin).sum()
+        union = np.logical_or(sal_bin, att_bin).sum()
+        
+        print("Active pixels - Saliency: {}, Attention: {}".format(
+            np.sum(sal_bin), np.sum(att_bin)))
+        
+        if union == 0:
+            return 0.0
+        return float(intersection) / union
+    
+    iou = calculate_iou_adaptive(saliency_norm, attention_norm)
+    print("Calculated IoU: {:.4f}".format(iou))
+    
+    # Calculate SSIM with proper window size
     try:
-        win_size = min(7, min(saliency_uint8.shape))  # Adjust window size based on image size
+        win_size = min(7, min(target_shape) - 1)
         if win_size % 2 == 0:
-            win_size -= 1  # Ensure odd window size
-        print("Using SSIM window size: {0}".format(win_size))
-        structural_sim = ssim(saliency_uint8, attention_uint8, win_size=win_size)
+            win_size -= 1
+        structural_sim = ssim(saliency_norm, attention_norm, 
+                            win_size=win_size,
+                            gaussian_weights=True,
+                            sigma=1.5,
+                            use_sample_covariance=False,
+                            multichannel=False)
     except Exception as e:
-        print("Warning: SSIM calculation failed: {0}".format(str(e)))
-        print("Falling back to MSE-based similarity")
-        # Fallback to MSE-based similarity if SSIM fails
+        print("SSIM calculation failed: {0}".format(str(e)))
         mse = np.mean((saliency_norm - attention_norm) ** 2)
-        structural_sim = 1 / (1 + mse)  # Convert MSE to similarity measure
-
-    # IoU calculation
-    s_thresh = np.percentile(saliency_norm, 90)
-    a_thresh = np.percentile(attention_norm, 90)
-    s_bin = saliency_norm > s_thresh
-    a_bin = attention_norm > a_thresh
-    intersection = np.logical_and(s_bin, a_bin).sum()
-    union = np.logical_or(s_bin, a_bin).sum()
-    iou = intersection / (union + 1e-8)
-
-    # KL divergence
-    p = saliency_norm.flatten() + 1e-10
-    q = attention_norm.flatten() + 1e-10
-    p /= p.sum()
-    q /= q.sum()
-    kl_divergence = np.sum(p * np.log(p / q))
-
-    print("Metrics computed successfully")
-    return {
-        'pearson_correlation': correlation,
-        'ssim': structural_sim,
-        'iou': iou,
-        'kl_divergence': kl_divergence
+        structural_sim = 1 / (1 + mse)
+    
+    # Calculate KL divergence with smoothing
+    def safe_kl_div(p, q, epsilon=1e-10):
+        p = p.flatten() + epsilon
+        q = q.flatten() + epsilon
+        p = p / p.sum()
+        q = q / q.sum()
+        return np.sum(p * np.log(p / q))
+    
+    kl_divergence = safe_kl_div(saliency_norm, attention_norm)
+    
+    print("\nFinal metrics:")
+    metrics = {
+        'pearson_correlation': float(correlation),
+        'ssim': float(structural_sim),
+        'iou': float(iou),
+        'kl_divergence': float(kl_divergence)
     }
+    for name, value in metrics.items():
+        print("{}: {:.4f}".format(name, value))
+    
+    return metrics
 
-def visualize_comparison(image, saliency_map, attention_maps, metrics, save_path):
-    """
-    Visualize the original image, its saliency map, and the attention maps.
-    Added dimension handling and debugging.
-    """
+def visualize_comparison(image, saliency_map, attention_maps, metrics, save_path, batch_idx=0):
+    """Modified visualization function to handle batch dimension"""
+    # Extract single image from batch if necessary
+    if len(image.shape) == 4:
+        image = image[batch_idx]
+    if len(saliency_map.shape) == 4:
+        saliency_map = saliency_map[batch_idx]
+        
+    # Create average attention map from batch
+    attention_maps = [amap[batch_idx] if len(amap.shape) == 4 else amap 
+                     for amap in attention_maps]
+
     print("Debug - Visualization input shapes:")
     print("Image shape: {0}".format(image.shape))
     print("Saliency map shape: {0}".format(saliency_map.shape))
