@@ -151,6 +151,46 @@ class AttentionMechanism:
         
         return session.run([model.fc3l, model.get_all_layers()], feed_dict=feed_dict)
 
+    def make_gradient_attention(self, object_idx, strength_vec, imtype=1):
+        """
+        Create gradient-based attention matrices
+        
+        Args:
+            object_idx (int): Index of object category to attend to
+            strength_vec (np.array): Vector of attention strengths for each layer
+            imtype (int): Type of image processing (1 or 2)
+        """
+        attnmats = []
+        
+        # Load gradient values
+        grad_file = "{0}/CATgradsDetectTrainTCs_im{1}.txt".format(self.TCpath, imtype)
+        with open(grad_file, "rb") as fp:
+            grads = pickle.load(fp)
+        
+        # Process each layer group
+        layer_groups = [(0,2), (2,4), (4,7), (7,10), (10,13)]
+
+    def make_tuning_attention(self, object_idx, strength_vec):
+        """
+        Create tuning curve based attention matrices
+        
+        Args:
+            object_idx (int): Index of object category to attend to
+            strength_vec (np.array): Vector of attention strengths for each layer
+        """
+        attnmats = []
+        
+        # Load tuning curves
+        tc_file = os.path.join(self.TCpath, 'featvecs20_train35_c.txt')
+        with open(tc_file, "rb") as fp:
+            tuning_curves = pickle.load(fp)
+        
+        # Process each layer group
+        layer_groups = [(0,2), (2,4), (4,7), (7,10), (10,13)]
+
+
+        
+
 class LayerAttention:
     """Helper class to manage layer-specific attention"""
     def __init__(self, num_layers=13):
