@@ -364,7 +364,12 @@ def visualize_comparison(image, saliency_map, attention_maps, metrics, save_path
     # Create average attention map from batch
     attention_maps = [amap[batch_idx] if len(amap.shape) == 4 else amap 
                      for amap in attention_maps]
+    # Print saliency statistics again here
+    print("Saliency (final) stats at visualization: min={:.5f}, max={:.5f}, mean={:.5f}, std={:.5f}".format(
+        saliency_map.min(), saliency_map.max(), saliency_map.mean(), saliency_map.std()))
 
+    fig = plt.figure(figsize=(15, 5))
+    
     print("Debug - Visualization input shapes:")
     print("Image shape: {0}".format(image.shape))
     print("Saliency map shape: {0}".format(saliency_map.shape))
