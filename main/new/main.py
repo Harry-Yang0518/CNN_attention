@@ -11,15 +11,15 @@ def parse_args():
     parser = argparse.ArgumentParser(description='VGG16 Attention Analysis')
     parser.add_argument('--imtype', type=int, default=1, choices=[1, 2, 3],
                       help='Image type: 1=merge, 2=array, 3=test')
-    parser.add_argument('--category', type=int, default=18,
+    parser.add_argument('--category', type=int, default=17,
                       help='Object category to attend to (0-19)')
-    parser.add_argument('--layer', type=int, default=9,
+    parser.add_argument('--layer', type=int, default=12,
                       help='Layer to apply attention (0-12, >12 for all layers)')
     parser.add_argument('--attention_type', type=str, default='TCs',
                       choices=['TCs', 'GRADs'], help='Type of attention to apply')
-    parser.add_argument('--batch_size', type=int, default=3,
+    parser.add_argument('--batch_size', type=int, default=1,
                       help='Batch size for processing')
-    parser.add_argument('--max_images', type=int, default=6,
+    parser.add_argument('--max_images', type=int, default=2,
                       help='Maximum number of images to load')
     return parser.parse_args()
 
@@ -163,7 +163,7 @@ def main():
     n_batches = (len(pos_images) + args.batch_size - 1) // args.batch_size
     
     # Setup attention parameters with validation
-    attention_strengths = np.array([0.2])
+    attention_strengths = np.array([0.2, 0.7])
     #attention_strengths = np.array([0.0,0.2,0.4,0.6,0.8,1.0])
 
     if not isinstance(attention_strengths, np.ndarray) or len(attention_strengths) == 0:
@@ -239,8 +239,8 @@ def main():
                         strength_vec,
                         args.batch_size
                     )
-                
-                debug_print_shapes(tp_batch, attention_maps, "After attention map generation")
+                #comment in for debugging
+                #debug_print_shapes(tp_batch, attention_maps, "After attention map generation")
                 
                 if attention_maps is None or len(attention_maps) == 0:
                     print("Warning: No attention maps generated")
@@ -275,8 +275,9 @@ def main():
             try:
                 all_layer_metrics = {}
                 for layer_idx in xrange(len(attention_maps)):
-                    print("\nAnalyzing layer {0}".format(layer_idx))
-                    print_debug_info(saliency_maps, attention_maps[layer_idx], layer_idx)
+                    #comment in for debugging
+                    #print("\nAnalyzing layer {0}".format(layer_idx))
+                    #print_debug_info(saliency_maps, attention_maps[layer_idx], layer_idx)
                     metrics = compare_saliency_attention(
                         saliency_maps, 
                         attention_maps,

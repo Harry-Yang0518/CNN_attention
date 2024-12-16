@@ -41,9 +41,10 @@ class AttentionAnalyzer(object):
             else:
                 processed_attnmats.append(amat)
         
-        print("Attention matrix shapes after processing:")
-        for i, amat in enumerate(processed_attnmats):
-            print("Layer {}: {}".format(i, amat.shape))
+        #comment in for debugging
+        # print("Attention matrix shapes after processing:")
+        # for i, amat in enumerate(processed_attnmats):
+        #     print("Layer {}: {}".format(i, amat.shape))
         
         # Get responses with attention
         print("Computing responses with attention...")
@@ -95,8 +96,9 @@ class AttentionAnalyzer(object):
         print("\nCreating feed dict:")
         for placeholder, attnmat in zip(placeholders, attnmats):
             expected_shape = placeholder.get_shape().as_list()
-            print("Placeholder shape: {}".format(expected_shape))
-            print("Attention matrix shape: {}".format(attnmat.shape))
+            #comment in for debugging
+            # print("Placeholder shape: {}".format(expected_shape))
+            # print("Attention matrix shape: {}".format(attnmat.shape))
             
             # Ensure attention matrix matches placeholder shape
             if len(expected_shape) != len(attnmat.shape):
@@ -276,10 +278,12 @@ def compare_saliency_attention(saliency_map, attention_maps, layer_idx):
     """
     Compare saliency and attention maps with proper shape handling.
     """
-    print("\nDebug - Input shapes:")
-    print("Saliency map shape: {0}".format(saliency_map.shape))
-    print("Number of attention maps: {0}".format(len(attention_maps)))
-    print("Selected layer attention map shape: {0}".format(attention_maps[layer_idx].shape))
+
+    #comment in for debugging
+    # print("\nDebug - Input shapes:")
+    # print("Saliency map shape: {0}".format(saliency_map.shape))
+    # print("Number of attention maps: {0}".format(len(attention_maps)))
+    # print("Selected layer attention map shape: {0}".format(attention_maps[layer_idx].shape))
     
     # Get the attention map for the specified layer and handle batch dimension
     attention_map = attention_maps[layer_idx]
@@ -295,9 +299,11 @@ def compare_saliency_attention(saliency_map, attention_maps, layer_idx):
     elif len(attention_map.shape) == 3:  # (h, w, c)
         attention_map = np.mean(attention_map, axis=-1)  # Average channels
         
-    print("\nAfter initial processing:")
-    print("Saliency map shape: {0}".format(saliency_map.shape))
-    print("Attention map shape: {0}".format(attention_map.shape))
+
+    #comment in for debugging
+    # print("\nAfter initial processing:")
+    # print("Saliency map shape: {0}".format(saliency_map.shape))
+    # print("Attention map shape: {0}".format(attention_map.shape))
     
     # Ensure same spatial dimensions with minimum size check
     min_size = 7
@@ -413,10 +419,11 @@ def visualize_comparison(image, saliency_map, attention_maps, metrics, save_path
 
     fig = plt.figure(figsize=(15, 5))
     
-    print("Debug - Visualization input shapes:")
-    print("Image shape: {0}".format(image.shape))
-    print("Saliency map shape: {0}".format(saliency_map.shape))
-    print("Number of attention maps: {0}".format(len(attention_maps)))
+    #comment in for debugging
+    # print("Debug - Visualization input shapes:")
+    # print("Image shape: {0}".format(image.shape))
+    # print("Saliency map shape: {0}".format(saliency_map.shape))
+    # print("Number of attention maps: {0}".format(len(attention_maps)))
     
     fig = plt.figure(figsize=(15, 5))
 

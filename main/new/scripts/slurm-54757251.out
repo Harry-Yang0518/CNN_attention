@@ -1,5 +1,0 @@
-/bin/bash: line 1: conda: command not found
-Traceback (most recent call last):
-  File "/scratch/hy2611/CNN_attention/main/new/main.py", line 1, in <module>
-    import tensorflow as tf
-ImportError: No module named tensorflow

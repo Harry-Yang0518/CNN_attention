@@ -48,9 +48,10 @@ class AttentionMechanism:
             # Process each layer group
             layer_groups = [(0,2), (2,4), (4,7), (7,10), (10,13)]
             
-            print("\nDebug - Tuning curves:")
-            print("Number of tuning curves: {0}".format(len(tuning_curves)))
-            print("Object index: {0}".format(object_idx))
+            #comment in for debugging
+            # print("\nDebug - Tuning curves:")
+            # print("Number of tuning curves: {0}".format(len(tuning_curves)))
+            # print("Object index: {0}".format(object_idx))
             
             for group_idx, (start, end) in enumerate(layer_groups):
                 h, w, c = self.layer_dims[group_idx]
@@ -84,8 +85,9 @@ class AttentionMechanism:
                     if self.attype == 1:
                         amat = np.maximum(amat, 0)
                     
-                    print("Layer {0} attention stats - Min: {1:.3f}, Max: {2:.3f}, Mean: {3:.3f}, Std: {4:.3f}".format(
-                        li, np.min(amat), np.max(amat), np.mean(amat), np.std(amat)))
+                    #comment in for debugging
+                    # print("Layer {0} attention stats - Min: {1:.3f}, Max: {2:.3f}, Mean: {3:.3f}, Std: {4:.3f}".format(
+                    #     li, np.min(amat), np.max(amat), np.mean(amat), np.std(amat)))
                     
                     attnmats.append(amat)
             
