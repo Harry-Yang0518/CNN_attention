@@ -30,166 +30,102 @@ class AttentionMechanism:
         ]
     
     def make_gradient_attention(self, object_idx, strength_vec, imtype=1):
-        """
-        Create gradient-based attention matrices
-        
-        Args:
-            object_idx (int): Index of object category to attend to
-            strength_vec (np.array): Vector of attention strengths for each layer
-            imtype (int): Type of image processing (1 or 2)
-        """
-        attnmats = []
-        
-        # Load gradient values
-        grad_file = "{0}/CATgradsDetectTrainTCs_im{1}.txt".format(self.TCpath, imtype)
-        with open(grad_file, "rb") as fp:
-            grads = pickle.load(fp)
-        
-        # Process each layer group
-        layer_groups = [(0,2), (2,4), (4,7), (7,10), (10,13)]  # Layer ranges
-        
-        for group_idx, (start, end) in enumerate(layer_groups):
-            h, w, c = self.layer_dims[group_idx]
+        """Create gradient-based attention matrices"""
+        try:
+            attnmats = []
+            # Load gradient values
+            grad_file = os.path.join(self.TCpath, "CATgradsDetectTrainTCs_im{0}.txt".format(imtype))
             
-            for li in range(start, end):
-                # Get feature values for this layer
-                fv = grads[li]
-                fmvals = np.squeeze(fv[object_idx, :]) / np.amax(np.abs(fv), axis=0)
+            if not os.path.exists(grad_file):
+                print("Warning: Gradient file not found: {0}".format(grad_file))
+                return None
                 
-                # Create attention values
-                aval = np.expand_dims(np.expand_dims(fmvals, axis=0), axis=0)
-                aval[aval == np.inf] = 0
-                aval[aval == -np.inf] = 0
-                aval = np.nan_to_num(aval)
+            with open(grad_file, "rb") as fp:
+                grads = pickle.load(fp)
+            
+            # Process each layer group
+            layer_groups = [(0,2), (2,4), (4,7), (7,10), (10,13)]
+            
+            for group_idx, (start, end) in enumerate(layer_groups):
+                h, w, c = self.layer_dims[group_idx]
                 
-                if self.bd == 0:
-                    aval[aval < 0] = 0
-                
-                # Create attention matrix based on attention type
-                if self.attype == 1:  # Multiplicative
-                    amat = np.ones((h, w, c)) + np.tile(aval, [h, w, 1]) * strength_vec[li]
-                    amat[amat < 0] = 0
-                else:  # Additive
-                    amat = np.tile(aval, [h, w, 1]) * strength_vec[li] * self.lyrBL[li]
-                
-                attnmats.append(amat)
-        
-        return attnmats
+                for li in range(start, end):
+                    # Get feature values for this layer
+                    fv = grads[li]
+                    fmvals = np.squeeze(fv[object_idx, :])
+                    # Normalize values
+                    max_abs = np.amax(np.abs(fv), axis=0)
+                    max_abs[max_abs == 0] = 1  # Avoid division by zero
+                    fmvals = fmvals / max_abs
+                    
+                    # Create attention values
+                    aval = np.expand_dims(np.expand_dims(fmvals, axis=0), axis=0)
+                    aval = np.nan_to_num(aval)
+                    
+                    if self.bd == 0:
+                        aval[aval < 0] = 0
+                    
+                    # Create attention matrix
+                    if self.attype == 1:  # Multiplicative
+                        amat = np.ones((h, w, c)) + np.tile(aval, [h, w, 1]) * strength_vec[li]
+                        amat[amat < 0] = 0
+                    else:  # Additive
+                        amat = np.tile(aval, [h, w, 1]) * strength_vec[li] * self.lyrBL[li]
+                    
+                    attnmats.append(amat)
+            
+            return attnmats
+            
+        except Exception as e:
+            print("Error in make_gradient_attention: {0}".format(str(e)))
+            return None
     
     def make_tuning_attention(self, object_idx, strength_vec):
-        """
-        Create tuning curve based attention matrices
-        
-        Args:
-            object_idx (int): Index of object category to attend to
-            strength_vec (np.array): Vector of attention strengths for each layer
-        """
-        attnmats = []
-        
-        # Load tuning curves
-        tc_file = os.path.join(self.TCpath, 'featvecs20_train35_c.txt')
-        with open(tc_file, "rb") as fp:
-            tuning_curves = pickle.load(fp)
-        
-        # Process each layer group
-        layer_groups = [(0,2), (2,4), (4,7), (7,10), (10,13)]
-        
-        for group_idx, (start, end) in enumerate(layer_groups):
-            h, w, c = self.layer_dims[group_idx]
+        """Create tuning curve based attention matrices"""
+        try:
+            attnmats = []
+            # Load tuning curves
+            tc_file = os.path.join(self.TCpath, 'featvecs20_train35_c.txt')
             
-            for li in range(start, end):
-                # Get tuning values for this layer
-                tc = tuning_curves[li]
-                fmvals = np.squeeze(tc[object_idx, :])
+            if not os.path.exists(tc_file):
+                print("Warning: Tuning curves file not found: {0}".format(tc_file))
+                return None
                 
-                # Create attention values
-                aval = np.expand_dims(np.expand_dims(fmvals, axis=0), axis=0)
-                aval[aval == np.inf] = 0
-                aval[aval == -np.inf] = 0
-                aval = np.nan_to_num(aval)
+            with open(tc_file, "rb") as fp:
+                tuning_curves = pickle.load(fp)
+            
+            # Process each layer group
+            layer_groups = [(0,2), (2,4), (4,7), (7,10), (10,13)]
+            
+            for group_idx, (start, end) in enumerate(layer_groups):
+                h, w, c = self.layer_dims[group_idx]
                 
-                if self.bd == 0:
-                    aval[aval < 0] = 0
-                
-                # Create attention matrix based on attention type
-                if self.attype == 1:  # Multiplicative
-                    amat = np.ones((h, w, c)) + np.tile(aval, [h, w, 1]) * strength_vec[li]
-                    amat[amat < 0] = 0
-                else:  # Additive
-                    amat = np.tile(aval, [h, w, 1]) * strength_vec[li] * self.lyrBL[li]
-                
-                attnmats.append(amat)
-        
-        return attnmats
-    
-    def apply_attention(self, model, images, attention_matrices, session):
-        """
-        Apply attention to model
-        
-        Args:
-            model: VGG16 model instance
-            images: Batch of images
-            attention_matrices: List of attention matrices for each layer
-            session: TensorFlow session
-        """
-        feed_dict = {
-            model.imgs: images,
-            model.a11: attention_matrices[0],
-            model.a12: attention_matrices[1],
-            model.a21: attention_matrices[2],
-            model.a22: attention_matrices[3],
-            model.a31: attention_matrices[4],
-            model.a32: attention_matrices[5],
-            model.a33: attention_matrices[6],
-            model.a41: attention_matrices[7],
-            model.a42: attention_matrices[8],
-            model.a43: attention_matrices[9],
-            model.a51: attention_matrices[10],
-            model.a52: attention_matrices[11],
-            model.a53: attention_matrices[12]
-        }
-        
-        return session.run([model.fc3l, model.get_all_layers()], feed_dict=feed_dict)
-
-    def make_gradient_attention(self, object_idx, strength_vec, imtype=1):
-        """
-        Create gradient-based attention matrices
-        
-        Args:
-            object_idx (int): Index of object category to attend to
-            strength_vec (np.array): Vector of attention strengths for each layer
-            imtype (int): Type of image processing (1 or 2)
-        """
-        attnmats = []
-        
-        # Load gradient values
-        grad_file = "{0}/CATgradsDetectTrainTCs_im{1}.txt".format(self.TCpath, imtype)
-        with open(grad_file, "rb") as fp:
-            grads = pickle.load(fp)
-        
-        # Process each layer group
-        layer_groups = [(0,2), (2,4), (4,7), (7,10), (10,13)]
-
-    def make_tuning_attention(self, object_idx, strength_vec):
-        """
-        Create tuning curve based attention matrices
-        
-        Args:
-            object_idx (int): Index of object category to attend to
-            strength_vec (np.array): Vector of attention strengths for each layer
-        """
-        attnmats = []
-        
-        # Load tuning curves
-        tc_file = os.path.join(self.TCpath, 'featvecs20_train35_c.txt')
-        with open(tc_file, "rb") as fp:
-            tuning_curves = pickle.load(fp)
-        
-        # Process each layer group
-        layer_groups = [(0,2), (2,4), (4,7), (7,10), (10,13)]
-
-
-        
+                for li in range(start, end):
+                    # Get tuning values for this layer
+                    tc = tuning_curves[li]
+                    fmvals = np.squeeze(tc[object_idx, :])
+                    
+                    # Create attention values
+                    aval = np.expand_dims(np.expand_dims(fmvals, axis=0), axis=0)
+                    aval = np.nan_to_num(aval)
+                    
+                    if self.bd == 0:
+                        aval[aval < 0] = 0
+                    
+                    # Create attention matrix
+                    if self.attype == 1:  # Multiplicative
+                        amat = np.ones((h, w, c)) + np.tile(aval, [h, w, 1]) * strength_vec[li]
+                        amat[amat < 0] = 0
+                    else:  # Additive
+                        amat = np.tile(aval, [h, w, 1]) * strength_vec[li] * self.lyrBL[li]
+                    
+                    attnmats.append(amat)
+            
+            return attnmats
+            
+        except Exception as e:
+            print("Error in make_tuning_attention: {0}".format(str(e)))
+            return None
 
 class LayerAttention:
     """Helper class to manage layer-specific attention"""

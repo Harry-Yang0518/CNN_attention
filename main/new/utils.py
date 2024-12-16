@@ -160,15 +160,51 @@ def compute_performance_metrics(tp_scores, tn_scores):
 
 def compare_saliency_attention(saliency_map, attention_map):
     """
-    Compare a saliency map to an attention map and compute:
-    - Pearson correlation
-    - Structural similarity (SSIM)
-    - Intersection-over-Union (IoU)
-    - KL divergence
+    Compare a saliency map to an attention map and compute similarity metrics.
+    Modified to handle small image dimensions.
     """
-
-    saliency_map = saliency_map.astype(np.float32)
-    attention_map = attention_map.astype(np.float32)
+    print("Debug - Input shapes:")
+    print("Saliency map shape: {0}".format(saliency_map.shape))
+    print("Attention map shape: {0}".format(attention_map.shape))
+    
+    # Ensure both maps are 2D
+    if len(saliency_map.shape) > 2:
+        print("Reducing saliency map dimensions...")
+        if len(saliency_map.shape) == 3:
+            saliency_map = np.mean(saliency_map, axis=-1)
+        elif len(saliency_map.shape) == 4:
+            saliency_map = np.mean(saliency_map, axis=(0, -1))
+    
+    if len(attention_map.shape) > 2:
+        print("Reducing attention map dimensions...")
+        if len(attention_map.shape) == 3:
+            attention_map = np.mean(attention_map, axis=-1)
+        elif len(attention_map.shape) == 4:
+            attention_map = np.mean(attention_map, axis=(0, -1))
+    
+    print("After reduction:")
+    print("Saliency map shape: {0}".format(saliency_map.shape))
+    print("Attention map shape: {0}".format(attention_map.shape))
+    
+    # Ensure same spatial dimensions and resize to a minimum size for SSIM
+    min_size = 16  # Minimum size for SSIM calculation
+    if saliency_map.shape != attention_map.shape or min(saliency_map.shape) < min_size:
+        print("Resizing maps...")
+        # Calculate target shape (ensure minimum size)
+        if saliency_map.shape != attention_map.shape:
+            target_shape = (max(min_size, min(saliency_map.shape[0], attention_map.shape[0])),
+                          max(min_size, min(saliency_map.shape[1], attention_map.shape[1])))
+        else:
+            target_shape = (max(min_size, saliency_map.shape[0]),
+                          max(min_size, saliency_map.shape[1]))
+        
+        # Use simple interpolation
+        saliency_map = cv2.resize(saliency_map.astype(np.float32), (target_shape[1], target_shape[0]))
+        attention_map = cv2.resize(attention_map.astype(np.float32), (target_shape[1], target_shape[0]))
+        
+        print("After resizing:")
+        print("Saliency map shape: {0}".format(saliency_map.shape))
+        print("Attention map shape: {0}".format(attention_map.shape))
 
     # Normalize both maps to [0,1]
     s_min, s_max = saliency_map.min(), saliency_map.max()
@@ -184,15 +220,28 @@ def compare_saliency_attention(saliency_map, attention_map):
     else:
         attention_norm = attention_map
 
-    # Pearson correlation
+    # Calculate metrics
     correlation, _ = pearsonr(saliency_norm.flatten(), attention_norm.flatten())
 
-    # SSIM
+    # Prepare images for SSIM
     saliency_uint8 = (saliency_norm * 255).astype(np.uint8)
     attention_uint8 = (attention_norm * 255).astype(np.uint8)
-    structural_sim = ssim(saliency_uint8, attention_uint8)
+    
+    # Calculate SSIM with adjusted window size
+    try:
+        win_size = min(7, min(saliency_uint8.shape))  # Adjust window size based on image size
+        if win_size % 2 == 0:
+            win_size -= 1  # Ensure odd window size
+        print("Using SSIM window size: {0}".format(win_size))
+        structural_sim = ssim(saliency_uint8, attention_uint8, win_size=win_size)
+    except Exception as e:
+        print("Warning: SSIM calculation failed: {0}".format(str(e)))
+        print("Falling back to MSE-based similarity")
+        # Fallback to MSE-based similarity if SSIM fails
+        mse = np.mean((saliency_norm - attention_norm) ** 2)
+        structural_sim = 1 / (1 + mse)  # Convert MSE to similarity measure
 
-    # IoU: threshold top 10%
+    # IoU calculation
     s_thresh = np.percentile(saliency_norm, 90)
     a_thresh = np.percentile(attention_norm, 90)
     s_bin = saliency_norm > s_thresh
@@ -208,6 +257,7 @@ def compare_saliency_attention(saliency_map, attention_map):
     q /= q.sum()
     kl_divergence = np.sum(p * np.log(p / q))
 
+    print("Metrics computed successfully")
     return {
         'pearson_correlation': correlation,
         'ssim': structural_sim,
@@ -218,8 +268,13 @@ def compare_saliency_attention(saliency_map, attention_map):
 def visualize_comparison(image, saliency_map, attention_maps, metrics, save_path):
     """
     Visualize the original image, its saliency map, and the attention maps.
-    Also display computed metrics as text.
+    Added dimension handling and debugging.
     """
+    print("Debug - Visualization input shapes:")
+    print("Image shape: {0}".format(image.shape))
+    print("Saliency map shape: {0}".format(saliency_map.shape))
+    print("Number of attention maps: {0}".format(len(attention_maps)))
+    
     fig = plt.figure(figsize=(15, 5))
 
     # Original Image
@@ -230,9 +285,8 @@ def visualize_comparison(image, saliency_map, attention_maps, metrics, save_path
 
     # Saliency Map
     plt.subplot(1, 3, 2)
-    # If saliency_map has multiple channels, reduce to one (e.g., max channel)
-    if saliency_map.ndim == 3:
-        saliency_map = saliency_map[..., 0]
+    if saliency_map.ndim > 2:
+        saliency_map = np.mean(saliency_map, axis=-1)
     plt.imshow(saliency_map, cmap='hot')
     plt.title("Saliency")
     plt.colorbar()
@@ -240,19 +294,38 @@ def visualize_comparison(image, saliency_map, attention_maps, metrics, save_path
 
     # Attention Maps - average them
     plt.subplot(1, 3, 3)
-    avg_attention = np.mean(attention_maps, axis=0)
+    # Process attention maps to ensure they're all the same size
+    processed_maps = []
+    target_shape = image.shape[:2]  # Use input image shape as reference
+    
+    for att_map in attention_maps:
+        if att_map.ndim > 2:
+            att_map = np.mean(att_map, axis=-1)
+        if att_map.shape != target_shape:
+            att_map = cv2.resize(att_map, (target_shape[1], target_shape[0]))
+        processed_maps.append(att_map)
+    
+    avg_attention = np.mean(processed_maps, axis=0)
     plt.imshow(avg_attention, cmap='viridis')
     plt.title("Attention")
     plt.colorbar()
     plt.axis('off')
 
-    # display metrics
-    text_str = "\n".join(["{}: {:.3f}".format(k, v) for k, v in metrics.items()])
+    # Display metrics
+    text_str = "\n".join(["{0}: {1:.3f}".format(k, v) for k, v in metrics.iteritems()])
     plt.figtext(0.02, 0.02, text_str, fontsize=10, bbox=dict(facecolor='white', alpha=0.8))
 
     plt.tight_layout()
     plt.savefig(save_path)
     plt.close(fig)
+
+# Add this debug print to the main script where comparison is called
+def print_debug_info(saliency_maps, attention_maps, layer):
+    """Helper function to print debug information"""
+    print("Debug - Shapes before comparison:")
+    print("Saliency maps shape: {0}".format(saliency_maps.shape))
+    print("Attention maps shapes: {0}".format([amap.shape for amap in attention_maps]))
+    print("Layer being compared: {0}".format(layer))
 
 def compute_saliency_map(sess, model, images, labels=None):
     """
