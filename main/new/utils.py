@@ -126,6 +126,165 @@ import matplotlib as mpl
 from scipy.stats import norm
 import pickle
 
+# Saliency_map
+import numpy as np
+import matplotlib
+matplotlib.use('Agg')  # Non-interactive backend
+import matplotlib.pyplot as plt
+from scipy.stats import norm, pearsonr
+from skimage.measure import compare_ssim as ssim
+import cv2
+import tensorflow as tf
+
+def compute_performance_metrics(tp_scores, tn_scores):
+    """
+    Compute performance metrics (performance, criteria, sensitivity) given arrays of
+    true positive (tp_scores) and true negative (tn_scores) probabilities.
+    """
+    # Ensure valid probability range to avoid infinite values in norm.ppf
+    tp_scores = np.clip(tp_scores, 0.001, 0.999)
+    tn_scores = np.clip(tn_scores, 0.001, 0.999)
+
+    # Performance measure
+    performance = (tp_scores + (1 - tn_scores)) / 2.0
+
+    # Criteria (c)
+    # c = -0.5 * (Z(Hit) + Z(False Alarm)), here tp_scores = Hit, (1 - tn_scores) = False Alarm
+    criteria = -0.5 * (norm.ppf(tp_scores) + norm.ppf(tn_scores))
+
+    # Sensitivity (d')
+    # d' = Z(Hit) - Z(False Alarm)
+    sensitivity = norm.ppf(tp_scores) - norm.ppf(tn_scores)
+
+    return performance, criteria, sensitivity
+
+def compare_saliency_attention(saliency_map, attention_map):
+    """
+    Compare a saliency map to an attention map and compute:
+    - Pearson correlation
+    - Structural similarity (SSIM)
+    - Intersection-over-Union (IoU)
+    - KL divergence
+    """
+
+    saliency_map = saliency_map.astype(np.float32)
+    attention_map = attention_map.astype(np.float32)
+
+    # Normalize both maps to [0,1]
+    s_min, s_max = saliency_map.min(), saliency_map.max()
+    a_min, a_max = attention_map.min(), attention_map.max()
+
+    if s_max > s_min:
+        saliency_norm = (saliency_map - s_min) / (s_max - s_min)
+    else:
+        saliency_norm = saliency_map
+
+    if a_max > a_min:
+        attention_norm = (attention_map - a_min) / (a_max - a_min)
+    else:
+        attention_norm = attention_map
+
+    # Pearson correlation
+    correlation, _ = pearsonr(saliency_norm.flatten(), attention_norm.flatten())
+
+    # SSIM
+    saliency_uint8 = (saliency_norm * 255).astype(np.uint8)
+    attention_uint8 = (attention_norm * 255).astype(np.uint8)
+    structural_sim = ssim(saliency_uint8, attention_uint8)
+
+    # IoU: threshold top 10%
+    s_thresh = np.percentile(saliency_norm, 90)
+    a_thresh = np.percentile(attention_norm, 90)
+    s_bin = saliency_norm > s_thresh
+    a_bin = attention_norm > a_thresh
+    intersection = np.logical_and(s_bin, a_bin).sum()
+    union = np.logical_or(s_bin, a_bin).sum()
+    iou = intersection / (union + 1e-8)
+
+    # KL divergence
+    p = saliency_norm.flatten() + 1e-10
+    q = attention_norm.flatten() + 1e-10
+    p /= p.sum()
+    q /= q.sum()
+    kl_divergence = np.sum(p * np.log(p / q))
+
+    return {
+        'pearson_correlation': correlation,
+        'ssim': structural_sim,
+        'iou': iou,
+        'kl_divergence': kl_divergence
+    }
+
+def visualize_comparison(image, saliency_map, attention_maps, metrics, save_path):
+    """
+    Visualize the original image, its saliency map, and the attention maps.
+    Also display computed metrics as text.
+    """
+    fig = plt.figure(figsize=(15, 5))
+
+    # Original Image
+    plt.subplot(1, 3, 1)
+    plt.imshow(image.astype(np.uint8))
+    plt.title("Original")
+    plt.axis('off')
+
+    # Saliency Map
+    plt.subplot(1, 3, 2)
+    # If saliency_map has multiple channels, reduce to one (e.g., max channel)
+    if saliency_map.ndim == 3:
+        saliency_map = saliency_map[..., 0]
+    plt.imshow(saliency_map, cmap='hot')
+    plt.title("Saliency")
+    plt.colorbar()
+    plt.axis('off')
+
+    # Attention Maps - average them
+    plt.subplot(1, 3, 3)
+    avg_attention = np.mean(attention_maps, axis=0)
+    plt.imshow(avg_attention, cmap='viridis')
+    plt.title("Attention")
+    plt.colorbar()
+    plt.axis('off')
+
+    # display metrics
+    text_str = "\n".join(["{}: {:.3f}".format(k, v) for k, v in metrics.items()])
+    plt.figtext(0.02, 0.02, text_str, fontsize=10, bbox=dict(facecolor='white', alpha=0.8))
+
+    plt.tight_layout()
+    plt.savefig(save_path)
+    plt.close(fig)
+
+def compute_saliency_map(sess, model, images, labels=None):
+    """
+    Compute vanilla gradient-based saliency maps for given images using the model.
+    """
+    if not hasattr(model, 'saliency_op'):
+        model.saliency_op = tf.gradients(model.fc3l, model.imgs)[0]
+
+    feed_dict = {
+        model.imgs: images,
+        model.a11: np.ones((224, 224, 64)),
+        model.a12: np.ones((224, 224, 64)),
+        model.a21: np.ones((112, 112, 128)),
+        model.a22: np.ones((112, 112, 128)),
+        model.a31: np.ones((56, 56, 256)),
+        model.a32: np.ones((56, 56, 256)),
+        model.a33: np.ones((56, 56, 256)),
+        model.a41: np.ones((28, 28, 512)),
+        model.a42: np.ones((28, 28, 512)),
+        model.a43: np.ones((28, 28, 512)),
+        model.a51: np.ones((14, 14, 512)),
+        model.a52: np.ones((14, 14, 512)),
+        model.a53: np.ones((14, 14, 512))
+    }
+
+    if labels is not None and hasattr(model, 'labs'):
+        feed_dict[model.labs] = labels
+
+    sal = sess.run(model.saliency_op, feed_dict=feed_dict)
+    sal = np.abs(sal).max(axis=-1)
+    return sal
+
 class DataLoader(object):
     """Utility class for loading and preprocessing data"""
     def __init__(self, image_path, tc_path):
