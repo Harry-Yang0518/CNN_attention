@@ -419,6 +419,16 @@ def visualize_comparison(image, saliency_map, attention_maps, metrics, save_path
     plt.savefig(save_path)
     plt.close(fig)
 
+    # Save a histogram of saliency values as well
+    hist_path = save_path.replace(".png", "_hist.png")
+    plt.figure()
+    plt.hist(saliency_map.flatten(), bins=50, color='red', alpha=0.7)
+    plt.title("Saliency Value Distribution")
+    plt.xlabel("Saliency value")
+    plt.ylabel("Frequency")
+    plt.savefig(hist_path)
+    plt.close()
+
 # Add this debug print to the main script where comparison is called
 def print_debug_info(saliency_maps, attention_maps, layer):
     """Helper function to print debug information"""
