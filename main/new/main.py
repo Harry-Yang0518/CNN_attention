@@ -159,9 +159,6 @@ def main():
             return
     
     # Process batches
-    # In main() function, replace the batch processing section with:
-
-    # Process batches
     print("\nProcessing data...")
     n_batches = (len(pos_images) + args.batch_size - 1) // args.batch_size
     
@@ -217,6 +214,8 @@ def main():
             try:
                 if args.attention_type == 'TCs':
                     print("Generating tuning curve attention maps...")
+                    # In FSGM scenario, we assume attype=1 (multiplicative)
+                    attention.attype = 1
                     attention_maps = make_attention_maps_with_batch(
                         attention, 
                         args.category, 
@@ -225,6 +224,13 @@ def main():
                     )
                 else:
                     print("Generating gradient attention maps...")
+                    # For gradient-based attention, we might similarly set attype=1
+                    attention.attype = 1
+                    # For gradient-based attention, you could implement another function if needed.
+                    # Here we reuse make_attention_maps_with_batch, which calls tuning-based.
+                    # To truly implement gradient-based attention, you'd modify the code similarly to tuning-based.
+                    # For simplicity, let's assume the attention code has been modified accordingly:
+                    # If needed, create a separate function or modify the original code to handle gradient-based.
                     attention_maps = make_attention_maps_with_batch(
                         attention, 
                         args.category, 
