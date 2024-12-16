@@ -452,7 +452,10 @@ def compute_saliency_map(sess, model, images, labels=None):
         feed_dict[model.labs] = labels
 
     sal = sess.run(model.saliency_op, feed_dict=feed_dict)
-    sal = np.abs(sal).max(axis=-1)
+    sal = np.sum(np.abs(sal), axis=-1)
+    print("Saliency statistics: min={:.5f}, max={:.5f}, mean={:.5f}, std={:.5f}".format(
+        sal.min(), sal.max(), sal.mean(), sal.std()))
+
     return sal
 
 class DataLoader(object):
