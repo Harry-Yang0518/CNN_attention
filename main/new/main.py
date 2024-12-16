@@ -11,15 +11,15 @@ def parse_args():
     parser = argparse.ArgumentParser(description='VGG16 Attention Analysis')
     parser.add_argument('--imtype', type=int, default=1, choices=[1, 2, 3],
                       help='Image type: 1=merge, 2=array, 3=test')
-    parser.add_argument('--category', type=int, default=19,
+    parser.add_argument('--category', type=int, default=18,
                       help='Object category to attend to (0-19)')
-    parser.add_argument('--layer', type=int, default=3,
+    parser.add_argument('--layer', type=int, default=9,
                       help='Layer to apply attention (0-12, >12 for all layers)')
     parser.add_argument('--attention_type', type=str, default='TCs',
                       choices=['TCs', 'GRADs'], help='Type of attention to apply')
-    parser.add_argument('--batch_size', type=int, default=5,
+    parser.add_argument('--batch_size', type=int, default=3,
                       help='Batch size for processing')
-    parser.add_argument('--max_images', type=int, default=10,
+    parser.add_argument('--max_images', type=int, default=6,
                       help='Maximum number of images to load')
     return parser.parse_args()
 
@@ -159,14 +159,13 @@ def main():
             return
     
     # Process batches
-    # In main() function, replace the batch processing section with:
-
-    # Process batches
     print("\nProcessing data...")
     n_batches = (len(pos_images) + args.batch_size - 1) // args.batch_size
     
     # Setup attention parameters with validation
-    attention_strengths = np.array([0.0,0.2,0.4,0.6,0.8,1.0])
+    attention_strengths = np.array([0.2])
+    #attention_strengths = np.array([0.0,0.2,0.4,0.6,0.8,1.0])
+
     if not isinstance(attention_strengths, np.ndarray) or len(attention_strengths) == 0:
         print("Error: Invalid attention strengths array")
         return
@@ -217,6 +216,8 @@ def main():
             try:
                 if args.attention_type == 'TCs':
                     print("Generating tuning curve attention maps...")
+                    # In FSGM scenario, we assume attype=1 (multiplicative)
+                    attention.attype = 1
                     attention_maps = make_attention_maps_with_batch(
                         attention, 
                         args.category, 
@@ -225,6 +226,13 @@ def main():
                     )
                 else:
                     print("Generating gradient attention maps...")
+                    # For gradient-based attention, we might similarly set attype=1
+                    attention.attype = 1
+                    # For gradient-based attention, you could implement another function if needed.
+                    # Here we reuse make_attention_maps_with_batch, which calls tuning-based.
+                    # To truly implement gradient-based attention, you'd modify the code similarly to tuning-based.
+                    # For simplicity, let's assume the attention code has been modified accordingly:
+                    # If needed, create a separate function or modify the original code to handle gradient-based.
                     attention_maps = make_attention_maps_with_batch(
                         attention, 
                         args.category, 
@@ -250,6 +258,12 @@ def main():
             # 1. Compute saliency maps
             print("Computing saliency maps...")
             saliency_maps = compute_saliency_map(sess, vgg, tp_batch, tplabs)
+            debug_saliency(saliency_maps)
+            # In main.py, after computing saliency maps:
+            if saliency_maps is not None:
+                print("Saliency map shape:", saliency_maps.shape)
+                print("Non-zero elements:", np.count_nonzero(saliency_maps))
+                print("Value range:", np.min(saliency_maps), "-", np.max(saliency_maps))
             if saliency_maps is None:
                 print("Warning: Failed to generate saliency maps")
                 continue

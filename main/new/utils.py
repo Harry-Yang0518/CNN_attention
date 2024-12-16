@@ -208,150 +208,193 @@ def make_attention_maps_with_batch(attention, category_idx, strength_vec, batch_
         # Handle additive attention similarly
         return attention.make_tuning_attention(category_idx, strength_vec)
 
+def compute_saliency_map(sess, model, images, labels=None):
+    """
+    Compute vanilla gradient-based saliency maps with improved normalization and error checking.
+    """
+    if not hasattr(model, 'saliency_op'):
+        # Use softmax instead of sigmoid for better gradient propagation
+        prob_output = tf.nn.softmax(model.fc3l)
+        # Take gradients with respect to logits before activation
+        model.saliency_op = tf.gradients(tf.reduce_max(model.fc3l, axis=1), model.imgs)[0]
+
+    # Set up feed dictionary with proper attention placeholders
+    feed_dict = {model.imgs: images}
+    
+    # Add required attention placeholders
+    attention_shapes = [
+        (224, 224, 64),  # a11, a12
+        (112, 112, 128), # a21, a22
+        (56, 56, 256),   # a31, a32, a33
+        (28, 28, 512),   # a41, a42, a43
+        (14, 14, 512)    # a51, a52, a53
+    ]
+    
+    # Dynamically add attention placeholders
+    for i in xrange(1, 6):  # Python 2.7 xrange
+        for j in xrange(1, 4):  # Up to 3 layers per block
+            placeholder_name = 'a{0}{1}'.format(i, j)
+            if hasattr(model, placeholder_name):
+                feed_dict[getattr(model, placeholder_name)] = np.ones(attention_shapes[i-1])
+
+    if labels is not None and hasattr(model, 'labs'):
+        feed_dict[model.labs] = labels
+
+    try:
+        # Compute saliency
+        sal = sess.run(model.saliency_op, feed_dict=feed_dict)
+        
+        # Take absolute values and sum across channels
+        sal = np.abs(sal)
+        sal = np.sum(sal, axis=-1)
+        
+        # Add small epsilon to avoid division by zero
+        epsilon = 1e-10
+        sal = sal + epsilon
+        
+        # Normalize to [0,1] range
+        sal_min = np.min(sal, axis=(1,2), keepdims=True)
+        sal_max = np.max(sal, axis=(1,2), keepdims=True)
+        sal = (sal - sal_min) / (sal_max - sal_min + epsilon)
+        
+        print("Saliency statistics: min={0:.5f}, max={1:.5f}, mean={2:.5f}, std={3:.5f}".format(
+            np.min(sal), np.max(sal), np.mean(sal), np.std(sal)))
+        
+        # Verify we have non-zero gradients
+        if np.allclose(sal, 0) or np.allclose(sal, 1):
+            print("Warning: Saliency maps are nearly constant!")
+            
+        return sal
+
+    except Exception as e:
+        print("Error computing saliency maps: {0}".format(str(e)))
+        print("Shape of input images: {0}".format(images.shape))
+        print("Feed dict keys: {0}".format(feed_dict.keys()))
+        return None
+
 def compare_saliency_attention(saliency_map, attention_maps, layer_idx):
     """
-    Compare a saliency map to an attention map with fixed correlation and IoU calculations.
-    
-    Args:
-        saliency_map: numpy array of saliency values
-        attention_maps: list of attention maps
-        layer_idx: index of the layer to compare
+    Compare saliency and attention maps with proper shape handling.
     """
-    print("Debug - Input shapes:")
+    print("\nDebug - Input shapes:")
     print("Saliency map shape: {0}".format(saliency_map.shape))
     print("Number of attention maps: {0}".format(len(attention_maps)))
     print("Selected layer attention map shape: {0}".format(attention_maps[layer_idx].shape))
     
-    # Get the attention map for the specified layer
+    # Get the attention map for the specified layer and handle batch dimension
     attention_map = attention_maps[layer_idx]
     
-    # Ensure both maps are 2D
-    if len(saliency_map.shape) > 2:
-        print("Reducing saliency map dimensions...")
-        if len(saliency_map.shape) == 3:
-            saliency_map = np.mean(saliency_map, axis=-1)
-        elif len(saliency_map.shape) == 4:
-            saliency_map = np.mean(np.mean(saliency_map, axis=0), axis=-1)
-    
-    if len(attention_map.shape) > 2:
-        print("Reducing attention map dimensions...")
-        if len(attention_map.shape) == 3:
-            attention_map = np.mean(attention_map, axis=-1)
-        elif len(attention_map.shape) == 4:
-            attention_map = np.mean(np.mean(attention_map, axis=0), axis=-1)
-    
-    print("After reduction:")
+    # Handle batch dimension for both maps
+    if len(saliency_map.shape) == 3:  # (batch, h, w)
+        saliency_map = saliency_map[0]  # Take first batch
+    elif len(saliency_map.shape) == 4:  # (batch, h, w, c)
+        saliency_map = np.mean(saliency_map[0], axis=-1)  # Take first batch and average channels
+        
+    if len(attention_map.shape) == 4:  # (batch, h, w, c)
+        attention_map = np.mean(attention_map[0], axis=-1)  # Take first batch and average channels
+    elif len(attention_map.shape) == 3:  # (h, w, c)
+        attention_map = np.mean(attention_map, axis=-1)  # Average channels
+        
+    print("\nAfter initial processing:")
     print("Saliency map shape: {0}".format(saliency_map.shape))
     print("Attention map shape: {0}".format(attention_map.shape))
     
-    # Ensure same spatial dimensions with minimum size
-    target_shape = (max(7, min(saliency_map.shape[0], attention_map.shape[0])),
-                   max(7, min(saliency_map.shape[1], attention_map.shape[1])))
+    # Ensure same spatial dimensions with minimum size check
+    min_size = 7
+    target_h = max(min_size, min(saliency_map.shape[0], attention_map.shape[0]))
+    target_w = max(min_size, min(saliency_map.shape[1], attention_map.shape[1]))
     
-    # Resize both maps to target shape
-    saliency_map = cv2.resize(saliency_map.astype(np.float32), 
-                            (target_shape[1], target_shape[0]))
-    attention_map = cv2.resize(attention_map.astype(np.float32), 
-                             (target_shape[1], target_shape[0]))
+    # Resize both maps
+    saliency_map = cv2.resize(saliency_map.astype(np.float32), (target_w, target_h))
+    attention_map = cv2.resize(attention_map.astype(np.float32), (target_w, target_h))
     
-    print("After resizing:")
-    print("Target shape: {0}".format(target_shape))
+    print("\nAfter resizing:")
+    print("Target shape: ({0}, {1})".format(target_h, target_w))
+    print("Saliency map shape: {0}".format(saliency_map.shape))
+    print("Attention map shape: {0}".format(attention_map.shape))
     
-    # Robust normalization with output range checking
+    # Normalize maps to [0,1] range
+    epsilon = 1e-10
+    
     def normalize_map(x):
         x_min, x_max = np.min(x), np.max(x)
-        if x_max == x_min:
-            return np.ones_like(x) * 0.5  # Return uniform map if constant
-        x_norm = (x - x_min) / (x_max - x_min)
-        # Ensure no values outside [0,1]
-        return np.clip(x_norm, 0, 1)
+        if np.abs(x_max - x_min) < epsilon:
+            print("Warning: Constant map detected")
+            return np.random.normal(0.5, 0.1, x.shape)
+        return (x - x_min) / (x_max - x_min + epsilon)
     
     saliency_norm = normalize_map(saliency_map)
     attention_norm = normalize_map(attention_map)
     
-    print("Normalization check:")
-    print("Saliency map range: [{:.4f}, {:.4f}]".format(
-        np.min(saliency_norm), np.max(saliency_norm)))
-    print("Attention map range: [{:.4f}, {:.4f}]".format(
-        np.min(attention_norm), np.max(attention_norm)))
+    # Verify shapes before flattening
+    assert saliency_norm.shape == attention_norm.shape, \
+        "Shape mismatch: saliency {0} vs attention {1}".format(
+            saliency_norm.shape, attention_norm.shape)
     
-    # Calculate correlation only if both maps have variance
-    s_std = np.std(saliency_norm)
-    a_std = np.std(attention_norm)
+    # Print normalized map statistics
+    print("\nNormalized maps statistics:")
+    print("Saliency - min: {0:.5f}, max: {1:.5f}, mean: {2:.5f}, std: {3:.5f}".format(
+        np.min(saliency_norm), np.max(saliency_norm), 
+        np.mean(saliency_norm), np.std(saliency_norm)))
+    print("Attention - min: {0:.5f}, max: {1:.5f}, mean: {2:.5f}, std: {3:.5f}".format(
+        np.min(attention_norm), np.max(attention_norm), 
+        np.mean(attention_norm), np.std(attention_norm)))
     
-    if s_std > 0 and a_std > 0:
-        correlation, _ = pearsonr(saliency_norm.flatten(), attention_norm.flatten())
-        print("Valid correlation calculated: {:.4f}".format(correlation))
+    # Compute metrics
+    metrics = {}
+    
+    # Correlation - ensure same shape when flattening
+    sal_flat = saliency_norm.flatten()
+    att_flat = attention_norm.flatten()
+    
+    if np.std(sal_flat) > epsilon and np.std(att_flat) > epsilon:
+        correlation, _ = pearsonr(sal_flat, att_flat)
+        metrics['pearson_correlation'] = float(correlation)
     else:
-        correlation = 0.0
-        print("Zero correlation due to constant map(s)")
-        print("Std devs - Saliency: {:.4f}, Attention: {:.4f}".format(s_std, a_std))
+        print("Warning: Zero variance in maps")
+        metrics['pearson_correlation'] = 0.0
     
-    # Calculate IoU with adaptive thresholding
-    def calculate_iou_adaptive(sal_map, att_map):
-        # Find connected components in both maps
-        sal_thresh = np.mean(sal_map) + np.std(sal_map)
-        att_thresh = np.mean(att_map) + np.std(att_map)
+    # IoU with adaptive thresholding
+    def calculate_iou(sal_map, att_map, threshold_percentile=75):
+        sal_thresh = np.percentile(sal_map, threshold_percentile)
+        att_thresh = np.percentile(att_map, threshold_percentile)
         
-        # Binary masks
         sal_bin = sal_map > sal_thresh
         att_bin = att_map > att_thresh
-        
-        # Ensure we have some active pixels
-        if not np.any(sal_bin) or not np.any(att_bin):
-            sal_bin = sal_map > np.percentile(sal_map, 75)
-            att_bin = att_map > np.percentile(att_map, 75)
         
         intersection = np.logical_and(sal_bin, att_bin).sum()
         union = np.logical_or(sal_bin, att_bin).sum()
         
-        print("Active pixels - Saliency: {}, Attention: {}".format(
-            np.sum(sal_bin), np.sum(att_bin)))
-        
-        if union == 0:
-            return 0.0
-        return float(intersection) / union
+        return float(intersection) / (union + epsilon) if union > 0 else 0.0
     
-    iou = calculate_iou_adaptive(saliency_norm, attention_norm)
-    print("Calculated IoU: {:.4f}".format(iou))
+    metrics['iou'] = calculate_iou(saliency_norm, attention_norm)
     
-    # Calculate SSIM with proper window size
+    # SSIM
     try:
-        win_size = min(7, min(target_shape) - 1)
-        if win_size % 2 == 0:
-            win_size -= 1
-        structural_sim = ssim(saliency_norm, attention_norm, 
-                            win_size=win_size,
-                            gaussian_weights=True,
-                            sigma=1.5,
-                            use_sample_covariance=False,
-                            multichannel=False)
+        metrics['ssim'] = float(ssim(saliency_norm, attention_norm, 
+                                   win_size=min(7, min(target_h, target_w)-1),
+                                   gaussian_weights=True))
     except Exception as e:
-        print("SSIM calculation failed: {0}".format(str(e)))
-        mse = np.mean((saliency_norm - attention_norm) ** 2)
-        structural_sim = 1 / (1 + mse)
+        print("Warning: SSIM computation failed: {0}".format(str(e)))
+        metrics['ssim'] = 0.0
     
-    # Calculate KL divergence with smoothing
-    def safe_kl_div(p, q, epsilon=1e-10):
-        p = p.flatten() + epsilon
-        q = q.flatten() + epsilon
-        p = p / p.sum()
-        q = q / q.sum()
-        return np.sum(p * np.log(p / q))
+    # KL divergence
+    metrics['kl_divergence'] = float(np.sum(saliency_norm * np.log((saliency_norm + epsilon) / 
+                                                                  (attention_norm + epsilon))))
     
-    kl_divergence = safe_kl_div(saliency_norm, attention_norm)
-    
-    print("\nFinal metrics:")
-    metrics = {
-        'pearson_correlation': float(correlation),
-        'ssim': float(structural_sim),
-        'iou': float(iou),
-        'kl_divergence': float(kl_divergence)
-    }
-    for name, value in metrics.items():
-        print("{}: {:.4f}".format(name, value))
+    print("\nMetrics for layer {0}:".format(layer_idx))
+    for name, value in metrics.iteritems():
+        print("  {0}: {1:.4f}".format(name, value))
     
     return metrics
+
+# Add these debug statements in main.py
+def debug_saliency(saliency_maps):
+    """Helper function to debug saliency maps"""
+    if saliency_maps is not None:
+        print("Saliency map shape: {0}".format(saliency_maps.shape))
+        print("Non-zero elements: {0}".format(np.count_nonzero(saliency_maps)))
+        print("Value range: {0} - {1}".format(np.min(saliency_maps), np.max(saliency_maps)))
 
 def visualize_comparison(image, saliency_map, attention_maps, metrics, save_path, batch_idx=0):
     """Modified visualization function to handle batch dimension"""
@@ -437,41 +480,7 @@ def print_debug_info(saliency_maps, attention_maps, layer):
     print("Attention maps shapes: {0}".format([amap.shape for amap in attention_maps]))
     print("Layer being compared: {0}".format(layer))
 
-def compute_saliency_map(sess, model, images, labels=None):
-    """
-    Compute vanilla gradient-based saliency maps for given images using the model.
-    """
-    if not hasattr(model, 'saliency_op'):
-        # Probability-based output (sigmoid) to avoid saturation
-        prob_output = tf.nn.sigmoid(model.fc3l)
-        model.saliency_op = tf.gradients(prob_output, model.imgs)[0]
 
-    feed_dict = {
-        model.imgs: images,
-        model.a11: np.ones((224, 224, 64)),
-        model.a12: np.ones((224, 224, 64)),
-        model.a21: np.ones((112, 112, 128)),
-        model.a22: np.ones((112, 112, 128)),
-        model.a31: np.ones((56, 56, 256)),
-        model.a32: np.ones((56, 56, 256)),
-        model.a33: np.ones((56, 56, 256)),
-        model.a41: np.ones((28, 28, 512)),
-        model.a42: np.ones((28, 28, 512)),
-        model.a43: np.ones((28, 28, 512)),
-        model.a51: np.ones((14, 14, 512)),
-        model.a52: np.ones((14, 14, 512)),
-        model.a53: np.ones((14, 14, 512))
-    }
-
-    if labels is not None and hasattr(model, 'labs'):
-        feed_dict[model.labs] = labels
-
-    sal = sess.run(model.saliency_op, feed_dict=feed_dict)
-    sal = np.sum(np.abs(sal), axis=-1)
-    print("Saliency statistics: min={:.5f}, max={:.5f}, mean={:.5f}, std={:.5f}".format(
-        sal.min(), sal.max(), sal.mean(), sal.std()))
-
-    return sal
 
 class DataLoader(object):
     """Utility class for loading and preprocessing data"""
