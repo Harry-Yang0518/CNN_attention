@@ -427,7 +427,9 @@ def compute_saliency_map(sess, model, images, labels=None):
     Compute vanilla gradient-based saliency maps for given images using the model.
     """
     if not hasattr(model, 'saliency_op'):
-        model.saliency_op = tf.gradients(model.fc3l, model.imgs)[0]
+        # Probability-based output (sigmoid) to avoid saturation
+        prob_output = tf.nn.sigmoid(model.fc3l)
+        model.saliency_op = tf.gradients(prob_output, model.imgs)[0]
 
     feed_dict = {
         model.imgs: images,
