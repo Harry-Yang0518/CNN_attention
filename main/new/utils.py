@@ -210,7 +210,7 @@ def make_attention_maps_with_batch(attention, category_idx, strength_vec, batch_
         # Handle additive attention similarly
         return attention.make_tuning_attention(category_idx, strength_vec)
 
-def compute_saliency_map(sess, model, images, labels=None):
+def compute_saliency_map(sess, model, images, labels=None, attention_maps=None):
     """
     Compute vanilla gradient-based saliency maps with improved normalization and error checking.
     """
@@ -231,58 +231,52 @@ def compute_saliency_map(sess, model, images, labels=None):
         (28, 28, 512),   # a41, a42, a43
         (14, 14, 512)    # a51, a52, a53
     ]
+    placeholders = model.get_attention_placeholders()
+
     
-    # Dynamically add attention placeholders
-    for i in xrange(1, 6):  # Python 2.7 xrange
-        for j in xrange(1, 4):  # Up to 3 layers per block
-            placeholder_name = 'a{0}{1}'.format(i, j)
-            if hasattr(model, placeholder_name):
-                feed_dict[getattr(model, placeholder_name)] = np.ones(attention_shapes[i-1])
+    if attention_maps is not None and len(attention_maps) == len(placeholders):
+        # Use provided attention maps
+        for p, amap in zip(placeholders, attention_maps):
+            feed_dict[p] = amap
+    else:
+        # If no attention maps provided, use ones
+        for idx, p in enumerate(placeholders):
+            shape = p.get_shape().as_list()
+            if None in shape:
+                shape = [s if s is not None else 1 for s in shape]
+            feed_dict[p] = np.ones(shape)
 
     if labels is not None and hasattr(model, 'labs'):
-                # Extract the logit corresponding to the label
-        # Assuming labs is shape [batch_size, 1], squeeze to get [batch_size]
         target_labels = tf.reshape(model.labs, [-1])
-        # Gather the corresponding logit for each label. If your final layer is a single logit, just use it directly.
-        # If you have a single logit for binary classification, ensure the label is binary (0 or 1).
-        # If the label is 1, you'd want to maximize that logit.
-        # For a single logit scenario, you might do something like:
         logit = tf.where(tf.equal(target_labels, 1), model.fc3l[:, 0], -model.fc3l[:, 0])
     else:
-        # If no labels, default to just using model.fc3l[:, 0]
-        logit = model.fc3l[:, 0]   
+        logit = model.fc3l[:, 0]
 
     try:
-        # Compute saliency
         sal = sess.run(model.saliency_op, feed_dict=feed_dict)
         
         # Take absolute values and sum across channels
         sal = np.abs(sal)
         sal = np.sum(sal, axis=-1)
         
-        # Add small epsilon to avoid division by zero
+        # Normalize
         epsilon = 1e-10
-        sal = sal + epsilon
-        
-        # Normalize to [0,1] range
+        sal += epsilon
         sal_min = np.min(sal, axis=(1,2), keepdims=True)
         sal_max = np.max(sal, axis=(1,2), keepdims=True)
         sal = (sal - sal_min) / (sal_max - sal_min + epsilon)
-        
-        print("Saliency statistics: min={0:.5f}, max={1:.5f}, mean={2:.5f}, std={3:.5f}".format(
+
+        print("Saliency statistics: min={:.5f}, max={:.5f}, mean={:.5f}, std={:.5f}".format(
             np.min(sal), np.max(sal), np.mean(sal), np.std(sal)))
         
-        # Verify we have non-zero gradients
-        if np.allclose(sal, 0) or np.allclose(sal, 1):
-            print("Warning: Saliency maps are nearly constant!")
-            
         return sal
 
     except Exception as e:
-        print("Error computing saliency maps: {0}".format(str(e)))
-        print("Shape of input images: {0}".format(images.shape))
-        print("Feed dict keys: {0}".format(feed_dict.keys()))
+        print("Error computing saliency maps: {}".format(str(e)))
+        print("Shape of input images: {}".format(images.shape))
+        print("Feed dict keys: {}".format(feed_dict.keys()))
         return None
+
 
 def compare_saliency_attention(saliency_map, attention_maps, layer_idx):
     """
