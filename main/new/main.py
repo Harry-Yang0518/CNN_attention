@@ -11,7 +11,7 @@ def parse_args():
     parser = argparse.ArgumentParser(description='VGG16 Attention Analysis')
     parser.add_argument('--imtype', type=int, default=1, choices=[1, 2, 3],
                       help='Image type: 1=merge, 2=array, 3=test')
-    parser.add_argument('--category', type=int, default=17,
+    parser.add_argument('--category', type=int, default=15,
                       help='Object category to attend to (0-19)')
     parser.add_argument('--layer', type=int, default=12,
                       help='Layer to apply attention (0-12, >12 for all layers)')
@@ -258,6 +258,7 @@ def main():
             # 1. Compute saliency maps
             print("Computing saliency maps...")
             saliency_maps = compute_saliency_map(sess, vgg, tp_batch, tplabs)
+            #saliency_maps = compute_saliency_map(sess, vgg, tp_batch, tplabs, attention_maps=attention_maps)
             debug_saliency(saliency_maps)
             # In main.py, after computing saliency maps:
             if saliency_maps is not None:

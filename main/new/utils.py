@@ -240,7 +240,17 @@ def compute_saliency_map(sess, model, images, labels=None):
                 feed_dict[getattr(model, placeholder_name)] = np.ones(attention_shapes[i-1])
 
     if labels is not None and hasattr(model, 'labs'):
-        feed_dict[model.labs] = labels
+                # Extract the logit corresponding to the label
+        # Assuming labs is shape [batch_size, 1], squeeze to get [batch_size]
+        target_labels = tf.reshape(model.labs, [-1])
+        # Gather the corresponding logit for each label. If your final layer is a single logit, just use it directly.
+        # If you have a single logit for binary classification, ensure the label is binary (0 or 1).
+        # If the label is 1, you'd want to maximize that logit.
+        # For a single logit scenario, you might do something like:
+        logit = tf.where(tf.equal(target_labels, 1), model.fc3l[:, 0], -model.fc3l[:, 0])
+    else:
+        # If no labels, default to just using model.fc3l[:, 0]
+        logit = model.fc3l[:, 0]   
 
     try:
         # Compute saliency
