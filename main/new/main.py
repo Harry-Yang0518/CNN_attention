@@ -6,14 +6,17 @@ import argparse
 from vgg_16 import *
 from attention import *
 from utils import *
-##conda activate /ext3/envs/vgg16_env
+# from utils import (DataLoader, AttentionAnalyzer, Visualizer, pad_batch, compute_saliency_map,
+#                    compare_saliency_attention, debug_saliency, debug_print_shapes, visualize_comparison,
+#                    print_debug_info)
+
 def parse_args():
     parser = argparse.ArgumentParser(description='VGG16 Attention Analysis')
     parser.add_argument('--imtype', type=int, default=1, choices=[1, 2, 3],
                       help='Image type: 1=merge, 2=array, 3=test')
-    parser.add_argument('--category', type=int, default=17,
+    parser.add_argument('--category', type=int, default=19,
                       help='Object category to attend to (0-19)')
-    parser.add_argument('--layer', type=int, default=12,
+    parser.add_argument('--layer', type=int, default=11,
                       help='Layer to apply attention (0-12, >12 for all layers)')
     parser.add_argument('--attention_type', type=str, default='TCs',
                       choices=['TCs', 'GRADs'], help='Type of attention to apply')
@@ -32,15 +35,6 @@ def setup_paths():
         'image_path': os.path.join(base_path, 'images'),
         'save_path': base_path
     }
-
-def pad_batch(batch, target_size):
-    """Helper function to pad batch to target size using concatenation"""
-    current_size = batch.shape[0]
-    if current_size < target_size:
-        pad_size = target_size - current_size
-        zeros = np.zeros((pad_size,) + batch.shape[1:])
-        return np.concatenate([batch, zeros], axis=0)
-    return batch
 
 def main():
     # Parse arguments
@@ -164,7 +158,8 @@ def main():
     
     # Setup attention parameters with validation
     attention_strengths = np.array([0.2, 0.7])
-    #attention_strengths = np.array([0.0,0.2,0.4,0.6,0.8,1.0])
+    # Uncomment for more strength values:
+    # attention_strengths = np.array([0.0,0.2,0.4,0.6,0.8,1.0])
 
     if not isinstance(attention_strengths, np.ndarray) or len(attention_strengths) == 0:
         print("Error: Invalid attention strengths array")
@@ -216,7 +211,6 @@ def main():
             try:
                 if args.attention_type == 'TCs':
                     print("Generating tuning curve attention maps...")
-                    # In FSGM scenario, we assume attype=1 (multiplicative)
                     attention.attype = 1
                     attention_maps = make_attention_maps_with_batch(
                         attention, 
@@ -226,21 +220,13 @@ def main():
                     )
                 else:
                     print("Generating gradient attention maps...")
-                    # For gradient-based attention, we might similarly set attype=1
                     attention.attype = 1
-                    # For gradient-based attention, you could implement another function if needed.
-                    # Here we reuse make_attention_maps_with_batch, which calls tuning-based.
-                    # To truly implement gradient-based attention, you'd modify the code similarly to tuning-based.
-                    # For simplicity, let's assume the attention code has been modified accordingly:
-                    # If needed, create a separate function or modify the original code to handle gradient-based.
                     attention_maps = make_attention_maps_with_batch(
                         attention, 
                         args.category, 
                         strength_vec,
                         args.batch_size
                     )
-                #comment in for debugging
-                #debug_print_shapes(tp_batch, attention_maps, "After attention map generation")
                 
                 if attention_maps is None or len(attention_maps) == 0:
                     print("Warning: No attention maps generated")
@@ -257,9 +243,8 @@ def main():
             
             # 1. Compute saliency maps
             print("Computing saliency maps...")
-            saliency_maps = compute_saliency_map(sess, vgg, tp_batch, tplabs)
+            saliency_maps = compute_saliency_map(sess, vgg, tp_batch, tplabs, attention_maps=attention_maps)
             debug_saliency(saliency_maps)
-            # In main.py, after computing saliency maps:
             if saliency_maps is not None:
                 print("Saliency map shape:", saliency_maps.shape)
                 print("Non-zero elements:", np.count_nonzero(saliency_maps))
@@ -275,9 +260,6 @@ def main():
             try:
                 all_layer_metrics = {}
                 for layer_idx in xrange(len(attention_maps)):
-                    #comment in for debugging
-                    #print("\nAnalyzing layer {0}".format(layer_idx))
-                    #print_debug_info(saliency_maps, attention_maps[layer_idx], layer_idx)
                     metrics = compare_saliency_attention(
                         saliency_maps, 
                         attention_maps,
@@ -323,7 +305,7 @@ def main():
                         tp_batch,
                         saliency_maps,
                         attention_maps,
-                        all_layer_metrics['layer_{0}'.format(args.layer)],  # Use metrics from specified layer
+                        all_layer_metrics['layer_{0}'.format(args.layer)],
                         save_path,
                         batch_idx=img_idx
                     )
