@@ -257,8 +257,8 @@ def main():
             
             # 1. Compute saliency maps
             print("Computing saliency maps...")
-            saliency_maps = compute_saliency_map(sess, vgg, tp_batch, tplabs)
-            #saliency_maps = compute_saliency_map(sess, vgg, tp_batch, tplabs, attention_maps=attention_maps)
+            #saliency_maps = compute_saliency_map(sess, vgg, tp_batch, tplabs)
+            saliency_maps = compute_saliency_map(sess, vgg, tp_batch, tplabs, attention_maps=attention_maps)
             debug_saliency(saliency_maps)
             # In main.py, after computing saliency maps:
             if saliency_maps is not None:
