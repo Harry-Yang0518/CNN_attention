@@ -187,29 +187,29 @@ def debug_print_shapes(saliency_map, attention_maps, msg=""):
         print("Attention map {} shape: {}".format(i, amap.shape))
 
 def make_attention_maps_with_batch(attention, category_idx, strength_vec, batch_size):
-    """Modified attention map creation to ensure proper batch dimension"""
-    if attention.attype == 1:  # Multiplicative attention
-        attention_maps = []
-        layer_groups = [(0,2), (2,4), (4,7), (7,10), (10,13)]
-        
-        for group_idx, (start, end) in enumerate(layer_groups):
-            h, w, c = attention.layer_dims[group_idx]
-            
-            for li in range(start, end):
-                # Create base attention matrix
-                amat = attention.make_tuning_attention(category_idx, strength_vec)
-                if amat is None:
-                    continue
-                    
-                # Expand to include batch dimension
-                amat_batch = np.tile(amat[li][np.newaxis, :, :, :], [batch_size, 1, 1, 1])
-                amat_no_batch = amat[li]
-                attention_maps.append(amat_no_batch)
-                
-        return attention_maps
-    else:
-        # Handle additive attention similarly
-        return attention.make_tuning_attention(category_idx, strength_vec)
+    """Modified attention map creation to match placeholder shapes and ensure one call."""
+    # Call make_tuning_attention once
+    all_amats = attention.make_tuning_attention(category_idx, strength_vec)
+    if all_amats is None or len(all_amats) == 0:
+        print("Warning: make_tuning_attention returned None or empty list.")
+        return None
+
+    attention_maps = []
+    layer_groups = [(0,2), (2,4), (4,7), (7,10), (10,13)]
+    for group_idx, (start, end) in enumerate(layer_groups):
+        h, w, c = attention.layer_dims[group_idx]
+        for li in range(start, end):
+            # li should index directly into all_amats
+            if li < len(all_amats):
+                # Optionally add a batch dimension if needed
+                amat = all_amats[li]
+                amat_batch = np.tile(amat[np.newaxis, :, :, :], [batch_size, 1, 1, 1])
+                attention_maps.append(amat_batch)
+            else:
+                print("Warning: Layer index out of range in all_amats:", li)
+                continue
+    return attention_maps
+
 
 def compute_saliency_map(sess, model, images, labels=None, attention_maps=None):
     """
