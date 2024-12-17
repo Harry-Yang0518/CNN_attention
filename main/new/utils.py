@@ -203,7 +203,8 @@ def make_attention_maps_with_batch(attention, category_idx, strength_vec, batch_
                     
                 # Expand to include batch dimension
                 amat_batch = np.tile(amat[li][np.newaxis, :, :, :], [batch_size, 1, 1, 1])
-                attention_maps.append(amat_batch)
+                amat_no_batch = amat[li]
+                attention_maps.append(amat_no_batch)
                 
         return attention_maps
     else:
