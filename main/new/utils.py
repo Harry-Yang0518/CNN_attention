@@ -119,13 +119,13 @@ def pad_batch(batch, target_size):
 
 def compute_saliency_map(sess, model, images, labels=None, attention_maps=None):
     """
-    Compute vanilla gradient-based saliency maps maintaining 2D spatial structure.
+    Compute vanilla gradient-based saliency maps maintaining original signal distribution.
     Python 2.7 compatible version.
     """
     if not hasattr(model, 'saliency_op'):
         # Use the pre-softmax logits for better gradient signal
         target_logits = model.fc3l[:, 0]  # Get logit for target class
-        # Add gradient smoothing term for stability
+        # Add small stability term
         smoothed_logits = target_logits + 1e-8 * tf.reduce_mean(tf.square(model.imgs))
         model.saliency_op = tf.gradients(smoothed_logits, model.imgs)[0]
 
@@ -135,66 +135,32 @@ def compute_saliency_map(sess, model, images, labels=None, attention_maps=None):
             feed_dict[p] = amap
 
     try:
-        # Compute gradients
+        # Compute raw gradients
         sal = sess.run(model.saliency_op, feed_dict=feed_dict)
         
-        # Handle NaN values manually
+        # Handle NaN values
         sal[np.isnan(sal)] = 0.0
         
-        # Take absolute values while maintaining spatial dimensions
+        # Take absolute value while maintaining structure
         sal = np.abs(sal)
         
-        # Sum across color channels but keep spatial dimensions
-        sal = np.sum(sal, axis=-1, keepdims=False)  # Now shape is (batch, H, W)
+        # Sum across color channels to get 2D maps
+        sal = np.sum(sal, axis=-1)  # Shape becomes (batch, H, W)
         
-        # If saliency is all zeros or very close to zero, add small random noise
-        if np.all(np.abs(sal) < 1e-10):
-            print("Warning: Near-zero saliency detected, adding noise")
-            sal = sal + np.random.normal(0, 0.01, sal.shape)
-        
-        # Normalize each saliency map while preserving 2D structure
-        normalized_maps = []
+        # Add minimal processing - just clip extreme outliers
         for i in range(sal.shape[0]):
-            smap = sal[i]  # Get 2D map for this image
+            smap = sal[i]
+            # Clip extreme outliers at 1st and 99th percentiles
+            p1, p99 = np.percentile(smap, [1, 99])
+            smap = np.clip(smap, p1, p99)
+            sal[i] = smap
             
-            # Add small noise to break ties
-            smap = smap + np.random.normal(0, 1e-6, smap.shape)
-            
-            # Robust normalization
-            vmin, vmax = np.percentile(smap, [1, 99])
-            if vmax > vmin:
-                smap = np.clip(smap, vmin, vmax)
-                smap = (smap - vmin) / (vmax - vmin)
-            else:
-                smap_min = np.min(smap)
-                smap_max = np.max(smap)
-                if smap_max > smap_min:
-                    smap = (smap - smap_min) / (smap_max - smap_min)
-                else:
-                    smap = np.zeros_like(smap)
-            
-            # Ensure output is 2D
-            if len(smap.shape) != 2:
-                print("Warning: Unexpected saliency map shape: {}".format(smap.shape))
-                smap = np.squeeze(smap)
-            
-            normalized_maps.append(smap)
-        
-        sal = np.stack(normalized_maps)
-        
         print("\nSaliency statistics:")
         print("  Shape: {}".format(sal.shape))
         print("  Min: {:.5f}".format(np.min(sal)))
         print("  Max: {:.5f}".format(np.max(sal)))
         print("  Mean: {:.5f}".format(np.mean(sal)))
         print("  Std: {:.5f}".format(np.std(sal)))
-        print("  Contains NaN: {}".format(np.any(np.isnan(sal))))
-        print("  Contains Inf: {}".format(np.any(np.isinf(sal))))
-        
-        # Final shape check
-        if len(sal.shape) != 3:  # Should be (batch, H, W)
-            print("Error: Invalid final saliency shape: {}".format(sal.shape))
-            return None
             
         return sal
         
@@ -203,7 +169,6 @@ def compute_saliency_map(sess, model, images, labels=None, attention_maps=None):
         print("Shape of input images: {}".format(images.shape))
         print("Feed dict keys: {}".format(feed_dict.keys()))
         return None
-
 def debug_saliency(saliency_maps):
     """Helper function to debug saliency maps"""
     if saliency_maps is not None:
@@ -211,12 +176,7 @@ def debug_saliency(saliency_maps):
         print("Non-zero elements: {0}".format(np.count_nonzero(saliency_maps)))
         print("Value range: {0} - {1}".format(np.min(saliency_maps), np.max(saliency_maps)))
 
-def debug_print_shapes(saliency_map, attention_maps, msg=""):
-    """Helper function to print shapes at various stages"""
-    print("\n=== Debug Shapes {} ===".format(msg))
-    print("Saliency map shape: {}".format(saliency_map.shape))
-    for i, amap in enumerate(attention_maps):
-        print("Attention map {} shape: {}".format(i, amap.shape))
+
 
 def print_debug_info(saliency_maps, attention_maps, layer):
     """Helper function to print debug information"""
@@ -324,54 +284,92 @@ def compare_saliency_attention(saliency_map, attention_maps, layer_idx):
     return metrics
 
 def visualize_comparison(image, saliency_map, attention_maps, metrics, save_path, batch_idx=0):
+    """
+    Visualize the comparison between original image, saliency map, and attention maps.
+    
+    Parameters:
+    -----------
+    image : numpy.ndarray
+        Input image(s) with shape (batch_size, height, width, 3) or (height, width, 3)
+    saliency_map : numpy.ndarray
+        Saliency map(s) with shape (batch_size, height, width) or (height, width)
+    attention_maps : list of numpy.ndarray
+        List of attention maps for each layer
+    metrics : dict
+        Dictionary containing comparison metrics
+    save_path : str
+        Path to save the visualization
+    batch_idx : int
+        Index of the batch to visualize
+    """
+    # Extract single image if batch provided
     if len(image.shape) == 4:
         image = image[batch_idx]
-    if len(saliency_map.shape) == 4:
-        saliency_map = saliency_map[batch_idx]
-        
-    attention_maps = [amap[batch_idx] if len(amap.shape) == 4 else amap for amap in attention_maps]
-    print("Saliency (final) stats at visualization: min={:.5f}, max={:.5f}, mean={:.5f}, std={:.5f}".format(
-        saliency_map.min(), saliency_map.max(), saliency_map.mean(), saliency_map.std()))
-
+    
+    # Process saliency map
+    if len(saliency_map.shape) == 3:  # If batch dimension present
+        saliency_map = saliency_map[batch_idx]  # Now shape: (height, width)
+    
+    # Create visualization
     fig = plt.figure(figsize=(15, 5))
 
+    # Original image
     plt.subplot(1, 3, 1)
     plt.imshow(image.astype(np.uint8))
     plt.title("Original")
     plt.axis('off')
 
+    # Saliency map
     plt.subplot(1, 3, 2)
-    if saliency_map.ndim > 2:
-        saliency_map = np.mean(saliency_map, axis=-1)
-    plt.imshow(saliency_map, cmap='hot')
+    saliency_plot = plt.imshow(saliency_map, cmap='hot')
     plt.title("Saliency")
-    plt.colorbar()
+    plt.colorbar(saliency_plot)
     plt.axis('off')
+    
+    # Print saliency statistics
+    print("\nSaliency Map Statistics:")
+    print("Min: {:.5f}".format(np.min(saliency_map)))
+    print("Max: {:.5f}".format(np.max(saliency_map)))
+    print("Mean: {:.5f}".format(np.mean(saliency_map)))
+    print("Std: {:.5f}".format(np.std(saliency_map)))
 
+    # Average attention maps
     plt.subplot(1, 3, 3)
-    processed_maps = []
     target_shape = image.shape[:2]
     
+    # Process attention maps
+    processed_maps = []
     for att_map in attention_maps:
-        if att_map.ndim > 2:
+        # Remove batch dimension if present
+        if len(att_map.shape) == 4:
+            att_map = att_map[batch_idx]
+        
+        # Average across channels if present
+        if len(att_map.shape) == 3:
             att_map = np.mean(att_map, axis=-1)
+            
+        # Resize to match image dimensions
         if att_map.shape != target_shape:
-            att_map = cv2.resize(att_map, (target_shape[1], target_shape[0]))
+            att_map = cv2.resize(att_map.astype(np.float32), 
+                               (target_shape[1], target_shape[0]))
+            
         processed_maps.append(att_map)
     
     avg_attention = np.mean(processed_maps, axis=0)
-    plt.imshow(avg_attention, cmap='viridis')
+    attention_plot = plt.imshow(avg_attention, cmap='viridis')
     plt.title("Attention")
-    plt.colorbar()
+    plt.colorbar(attention_plot)
     plt.axis('off')
 
-    text_str = "\n".join(["{0}: {1:.3f}".format(k, v) for k, v in metrics.iteritems()])
-    plt.figtext(0.02, 0.02, text_str, fontsize=10, bbox=dict(facecolor='white', alpha=0.8))
+    # Add metrics text
+    metrics_str = "\n".join(["{}: {:.3f}".format(k, v) for k, v in metrics.iteritems()])
+    plt.figtext(0.02, 0.02, metrics_str, fontsize=10, bbox=dict(facecolor='white', alpha=0.8))
 
     plt.tight_layout()
     plt.savefig(save_path)
     plt.close(fig)
 
+    # Save histogram of saliency values
     hist_path = save_path.replace(".png", "_hist.png")
     plt.figure()
     plt.hist(saliency_map.flatten(), bins=50, color='red', alpha=0.7)
@@ -380,7 +378,7 @@ def visualize_comparison(image, saliency_map, attention_maps, metrics, save_path
     plt.ylabel("Frequency")
     plt.savefig(hist_path)
     plt.close()
-
+    
 def make_attention_maps_with_batch(attention_mechanism, object_idx, strength_vec, batch_size=1):
     """
     Create attention maps with proper dimension handling for VGG16 layers
@@ -402,6 +400,9 @@ def make_attention_maps_with_batch(attention_mechanism, object_idx, strength_vec
         List of attention maps matching VGG16 placeholder shapes exactly
     """
     try:
+        print("\nDebug - Creating attention maps:")
+        print("Object index:", object_idx)
+        print("Strength vector:", strength_vec)
         # Generate base attention maps
         if attention_mechanism.attype == 1:  # Tuning curves
             base_maps = attention_mechanism.make_tuning_attention(object_idx, strength_vec)
