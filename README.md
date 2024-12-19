@@ -20,8 +20,10 @@ gunzip -vvv overlay-25GB-500K.ext3.gz
 
 1. Navigate to the ext3 directory and download Miniconda:
 ```bash
+singularity exec --nv --overlay ext3_path=/scratch/$USER/CNN_attention/environment/overlay-25GB-500K.ext3:ro sif_path=/scratch/$USER//CNN_attention/environment/cuda11.4.2-cudnn8.2.4-devel-ubuntu20.04.3.sif /bin/bash -c
+
 cd /ext3
-wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
+wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh --no-check-certificate
 ```
 
 2. Install Miniconda:
@@ -56,16 +58,12 @@ The following packages will be installed in the environment:
 | Pillow | 6.2.1 |
 | h5py | 2.10.0 |
 
-Additional dependencies and their versions:
-- absl-py (0.15.0)
-- tensorboard (1.15.0)
-- tensorflow-estimator (1.15.1)
-- Keras-Applications (1.0.8)
-- Keras-Preprocessing (1.1.2)
-- protobuf (3.17.3)
-- grpcio (1.41.1)
-- Markdown (3.1.1)
-- Werkzeug (1.0.1)
+Package Installation
+After activating the environment, install all required packages using pip:
+```bash
+pip install tensorflow==1.15.0 numpy==1.16.6 scipy==1.2.3 matplotlib==2.2.5 scikit-learn==0.20.4 scikit-image==0.14.2 Pillow==6.2.1 h5py==2.10.0 absl-py==0.15.0 astor==0.8.1 backports-abc==0.5 backports.functools-lru-cache==1.6.6 backports.weakref==1.0.post1 certifi==2020.6.20 cloudpickle==1.2.2 cycler==0.10.0 cytoolz==0.10.1 dask==1.2.2 decorator==5.1.0 enum34==1.1.10 funcsigs==1.0.2 functools32==3.2.3.post2 futures==3.4.0 gast==0.2.2 google-pasta==0.2.0 grpcio==1.41.1 imageio==2.6.1 Keras-Applications==1.0.8 Keras-Preprocessing==1.1.2 kiwisolver==1.1.0 Markdown==3.1.1 mkl-fft==1.0.15 mkl-random==1.1.0 mkl-service==2.3.0 mock==3.0.5 networkx==2.2 olefile==0.46 opt-einsum==2.3.2 protobuf==3.17.3 pyparsing==2.4.7 python-dateutil==2.9.0.post0 pytz==2024.2 PyWavelets==1.0.3 singledispatch==3.7.0 six==1.16.0 subprocess32==3.5.4 tensorboard==1.15.0 tensorflow-estimator==1.15.1 termcolor==1.1.0 toolz==0.10.0 tornado==5.1.1 Werkzeug==1.0.1 wheel==0.37.1 wrapt==1.15.0
+```
+This command will install all packages with their specific versions to ensure compatibility.
 
 ## Note
 
