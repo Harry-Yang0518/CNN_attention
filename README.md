@@ -82,6 +82,8 @@ This command will install all packages with their specific versions to ensure co
 
 # 2. Dataset Structure
 
+Download the dataset here  `https://datadryad.org/stash/dataset/doi:10.5061/dryad.jc14081#usage`
+
 Base path: `/scratch/$USER/CNN_attention/Data/VGG16`
 
 ## Main Directories
@@ -148,4 +150,4 @@ sbatch /scratch/$USER/CNN_attention/main/scripts/main.sh
 ```
 
 # 4. Results
-The numeric output are logged under the /logs directory, and you can check the visual output here: https://drive.google.com/drive/folders/1LUptdZMMl4rTT63bABkDo3AArDtgU4pr?usp=sharing
+The numeric output are logged under the `/logs` directory, and you can check the visual output here: https://drive.google.com/drive/folders/1LUptdZMMl4rTT63bABkDo3AArDtgU4pr?usp=sharing
