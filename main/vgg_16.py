@@ -2,6 +2,9 @@ import tensorflow as tf
 import numpy as np
 
 class VGG16Base:
+    '''
+    VGG16 model with attention mechanism
+    '''
     def __init__(self, imgs, labs=None, weights=None, sess=None):
         self.imgs = imgs
         self.convlayers()
@@ -16,6 +19,14 @@ class VGG16Base:
             self.load_weights(weights, sess)
     
     def load_weights(self, weight_file, sess):
+        '''
+        Load pre-trained weights from a .npy file
+
+        Args:
+            weight_file: path to the .npy file
+            sess: tf.Session object
+        '''
+
         weights = np.load(weight_file)
         keys = sorted(weights.keys())
         keys = keys[0:-2]
@@ -25,6 +36,9 @@ class VGG16Base:
             sess.run(self.parameters[i].assign(weights[k]))
 
     def get_all_layers(self):
+        '''
+        Get all layers of the network
+        '''
         return [
             self.smean1_1, self.smean1_2,
             self.smean2_1, self.smean2_2,
@@ -34,6 +48,9 @@ class VGG16Base:
         ]
 
     def get_attention_placeholders(self):
+        '''
+        Get placeholders for attention weights
+        '''
         return [
             self.a11, self.a12,
             self.a21, self.a22,
@@ -43,6 +60,10 @@ class VGG16Base:
         ]
 
     def convlayers(self):
+        '''
+        Create the convolutional layers
+        '''
+
         self.parameters = []
 
         with tf.name_scope('preprocess') as scope:
@@ -258,6 +279,9 @@ class VGG16Base:
                                name='pool5')
 
     def fc_layers(self):
+        '''
+        Create the fully connected layers
+        '''
         shape = int(np.prod(self.pool5.get_shape()[1:]))
 
         fc1w = tf.Variable(tf.truncated_normal([shape, 4096],

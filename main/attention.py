@@ -24,6 +24,11 @@ class AttentionMechanism:
         ]
     
     def make_tuning_attention(self, object_idx, strength_vec):
+        '''
+        Create attention matrices based on tuning curves
+        object_idx: index of the object in the tuning curve
+        strength_vec: vector of attention strengths for each layer
+        '''
         try:
             attnmats = []
             tc_file = os.path.join(self.TCpath, 'featvecs20_train35_c.txt')
@@ -62,6 +67,13 @@ class AttentionMechanism:
             return None
 
     def make_gradient_attention(self, object_idx, strength_vec, imtype=1):
+        '''
+        Create attention matrices based on gradients
+        object_idx: index of the object in the gradient matrix
+        strength_vec: vector of attention strengths for each layer
+        imtype: image type (1 = natural, 2 = synthetic)
+        '''
+
         try:
             attnmats = []
             grad_file = os.path.join(self.TCpath, "CATgradsDetectTrainTCs_im{0}.txt".format(imtype))
@@ -109,6 +121,9 @@ class AttentionMechanism:
             return None
 
 class LayerAttention:
+    '''
+    Class to manage attention strength for each layer
+    '''
     def __init__(self, num_layers=13):
         self.num_layers = num_layers
         

@@ -484,6 +484,18 @@ def make_attention_maps_with_batch(attention_mechanism, object_idx, strength_vec
 
 
 class DataLoader(object):
+    '''
+    Class to load image data and tuning curves for the VGG16 network
+
+    Parameters:
+    -----------
+    image_path : str
+        Path to the image data
+    tc_path : str
+    Attributes:
+    -----------
+    '''
+
     def __init__(self, image_path, tc_path):
         self.image_path = image_path
         self.tc_path = tc_path
@@ -521,6 +533,14 @@ class DataLoader(object):
         return tp_batch, tn_batch
 
 class Visualizer(object):
+    '''
+    Class to visualize attention effects and layer modulation factors
+
+    Parameters:
+    -----------
+    Attributes:
+    -----------
+    '''
     def __init__(self):
         mpl.rcParams['font.size'] = 22
         

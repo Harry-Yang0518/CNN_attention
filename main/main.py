@@ -6,9 +6,6 @@ import argparse
 from vgg_16 import *
 from attention import *
 from utils import *
-# from utils import (DataLoader, AttentionAnalyzer, Visualizer, pad_batch, compute_saliency_map,
-#                    compare_saliency_attention, debug_saliency, debug_print_shapes, visualize_comparison,
-#                    print_debug_info)
 
 def parse_args():
     parser = argparse.ArgumentParser(description='VGG16 Attention Analysis')
