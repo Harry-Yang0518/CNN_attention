@@ -69,4 +69,66 @@ This command will install all packages with their specific versions to ensure co
 
 This environment is specifically configured for running VGG16 and other deep learning models that require Python 2.7 and TensorFlow 1.15.0. Make sure to activate the environment (`conda activate /ext3/envs/vgg16_env`) before running your code.
 ## 2. Load the Data
+# Dataset Structure
+
+Base path: `/scratch/USER/CNN_attention/VGG16`
+
+## Main Directories
+```
+VGG16/
+├── images/                     # Image data directory
+├── catbins/                    # Category bins data
+├── ori_catbins/               # Orientation category bins
+├── object_GradsTCs/           # Object gradients TCs
+├── objperf/                   # Object performance metrics
+├── oriperf/                   # Orientation performance metrics
+├── ori_TCGrads/              # Orientation TC gradients
+```
+
+## Model Weights
+```
+VGG16/
+└── vgg16_weights.npz         # VGG16 model weights
+```
+
+## Stimulus and Object Files
+```
+VGG16/
+├── Stim2Constr540.npz                             # Stimulus construction data
+├── ObjectAttn_aTCs_0c0l_a1bd1_im1Nact.npz        # Object attention negative activation
+├── ObjectAttn_aTCs_0c0l_a1bd1_im1Pact.npz        # Object attention positive activation
+├── ObjectAttn_aTCs_0c0l_a1bd1_im1perf.npz        # Object attention performance
+```
+
+## Orientation Files
+```
+VGG16/
+├── OriAttn_aTCs_40o12lNact.npz                   # Orientation attention negative activation
+├── OriAttn_aTCs_40o12lPact.npz                   # Orientation attention positive activation
+├── OriAttn_aTCs_40o12lperf.npz                   # Orientation attention performance
+└── OriSpatAttn_aTCs_40o12l_Fperf.npz            # Orientation spatial attention performance
+```
+
+Note: The `attention_results_*` files are excluded from this structure as they are not part of the dataset.
+
+## Required Files for Project
+
+1. Dataset Files:
+   - `images/`
+   - `catbins/`
+   - `ori_catbins/`
+   - `object_GradsTCs/`
+   - `objperf/`
+   - `oriperf/`
+   - `ori_TCGrads/`
+
+2. Model Files:
+   - `vgg16_weights.npz`
+
+3. Stimulus and Analysis Files:
+   - `Stim2Constr540.npz`
+   - Object attention files (ObjectAttn_*.npz)
+   - Orientation attention files (OriAttn_*.npz)
+
 ## 3. How to Run
+
