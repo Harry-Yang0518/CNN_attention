@@ -1,0 +1,8 @@
+Base Experiment Parameters:
+Image Type: 1
+Batch Size: 1
+Max Images: 2
+Attention Type: TCs
+Categories: 1 5 9 13 17
+Layers: 0-12
+Timestamp: 20241216_103445

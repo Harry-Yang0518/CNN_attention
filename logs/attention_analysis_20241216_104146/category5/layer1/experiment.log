@@ -1,0 +1,2563 @@
+WARNING:tensorflow:From /scratch/hy2611/CNN_attention/main/new/main.py:63: The name tf.ConfigProto is deprecated. Please use tf.compat.v1.ConfigProto instead.
+
+WARNING:tensorflow:From /scratch/hy2611/CNN_attention/main/new/main.py:65: The name tf.Session is deprecated. Please use tf.compat.v1.Session instead.
+
+2024-12-16 10:44:35.690893: I tensorflow/core/platform/cpu_feature_guard.cc:142] Your CPU supports instructions that this TensorFlow binary was not compiled to use: AVX2 AVX512F FMA
+2024-12-16 10:44:35.698362: I tensorflow/core/platform/profile_utils/cpu_utils.cc:94] CPU Frequency: 2900000000 Hz
+2024-12-16 10:44:35.698668: I tensorflow/compiler/xla/service/service.cc:168] XLA service 0x50ef710 initialized for platform Host (this does not guarantee that XLA will be used). Devices:
+2024-12-16 10:44:35.698678: I tensorflow/compiler/xla/service/service.cc:176]   StreamExecutor device (0): Host, Default Version
+2024-12-16 10:44:35.701349: I tensorflow/stream_executor/platform/default/dso_loader.cc:44] Successfully opened dynamic library libcuda.so.1
+2024-12-16 10:44:35.840880: I tensorflow/compiler/xla/service/service.cc:168] XLA service 0x50e76e0 initialized for platform CUDA (this does not guarantee that XLA will be used). Devices:
+2024-12-16 10:44:35.840898: I tensorflow/compiler/xla/service/service.cc:176]   StreamExecutor device (0): Tesla V100-PCIE-32GB, Compute Capability 7.0
+2024-12-16 10:44:35.841455: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1618] Found device 0 with properties: 
+name: Tesla V100-PCIE-32GB major: 7 minor: 0 memoryClockRate(GHz): 1.38
+pciBusID: 0000:2f:00.0
+2024-12-16 10:44:35.842534: W tensorflow/stream_executor/platform/default/dso_loader.cc:55] Could not load dynamic library 'libcudart.so.10.0'; dlerror: libcudart.so.10.0: cannot open shared object file: No such file or directory; LD_LIBRARY_PATH: /usr/local/nvidia/lib:/usr/local/nvidia/lib64:/.singularity.d/libs
+2024-12-16 10:44:35.843496: W tensorflow/stream_executor/platform/default/dso_loader.cc:55] Could not load dynamic library 'libcublas.so.10.0'; dlerror: libcublas.so.10.0: cannot open shared object file: No such file or directory; LD_LIBRARY_PATH: /usr/local/nvidia/lib:/usr/local/nvidia/lib64:/.singularity.d/libs
+2024-12-16 10:44:35.844447: W tensorflow/stream_executor/platform/default/dso_loader.cc:55] Could not load dynamic library 'libcufft.so.10.0'; dlerror: libcufft.so.10.0: cannot open shared object file: No such file or directory; LD_LIBRARY_PATH: /usr/local/nvidia/lib:/usr/local/nvidia/lib64:/.singularity.d/libs
+2024-12-16 10:44:35.845513: W tensorflow/stream_executor/platform/default/dso_loader.cc:55] Could not load dynamic library 'libcurand.so.10.0'; dlerror: libcurand.so.10.0: cannot open shared object file: No such file or directory; LD_LIBRARY_PATH: /usr/local/nvidia/lib:/usr/local/nvidia/lib64:/.singularity.d/libs
+2024-12-16 10:44:35.846441: W tensorflow/stream_executor/platform/default/dso_loader.cc:55] Could not load dynamic library 'libcusolver.so.10.0'; dlerror: libcusolver.so.10.0: cannot open shared object file: No such file or directory; LD_LIBRARY_PATH: /usr/local/nvidia/lib:/usr/local/nvidia/lib64:/.singularity.d/libs
+2024-12-16 10:44:35.847351: W tensorflow/stream_executor/platform/default/dso_loader.cc:55] Could not load dynamic library 'libcusparse.so.10.0'; dlerror: libcusparse.so.10.0: cannot open shared object file: No such file or directory; LD_LIBRARY_PATH: /usr/local/nvidia/lib:/usr/local/nvidia/lib64:/.singularity.d/libs
+2024-12-16 10:44:35.848268: W tensorflow/stream_executor/platform/default/dso_loader.cc:55] Could not load dynamic library 'libcudnn.so.7'; dlerror: libcudnn.so.7: cannot open shared object file: No such file or directory; LD_LIBRARY_PATH: /usr/local/nvidia/lib:/usr/local/nvidia/lib64:/.singularity.d/libs
+2024-12-16 10:44:35.848279: W tensorflow/core/common_runtime/gpu/gpu_device.cc:1641] Cannot dlopen some GPU libraries. Please make sure the missing libraries mentioned above are installed properly if you would like to use GPU. Follow the guide at https://www.tensorflow.org/install/gpu for how to download and setup the required libraries for your platform.
+Skipping registering GPU devices...
+2024-12-16 10:44:35.848296: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1159] Device interconnect StreamExecutor with strength 1 edge matrix:
+2024-12-16 10:44:35.848301: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1165]      0 
+2024-12-16 10:44:35.848304: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1178] 0:   N 
+WARNING:tensorflow:From /scratch/hy2611/CNN_attention/main/new/main.py:69: The name tf.placeholder is deprecated. Please use tf.compat.v1.placeholder instead.
+
+WARNING:tensorflow:From /scratch/hy2611/CNN_attention/main/new/vgg_16.py:61: The name tf.truncated_normal is deprecated. Please use tf.random.truncated_normal instead.
+
+WARNING:tensorflow:From /scratch/hy2611/CNN_attention/main/new/vgg_16.py:87: The name tf.nn.max_pool is deprecated. Please use tf.nn.max_pool2d instead.
+
+WARNING:tensorflow:
+The TensorFlow contrib module will not be included in TensorFlow 2.0.
+For more information, please see:
+  * https://github.com/tensorflow/community/blob/master/rfcs/20180907-contrib-sunset.md
+  * https://github.com/tensorflow/addons
+  * https://github.com/tensorflow/io (for I/O related ops)
+If you depend on functionality not listed there, please file an issue.
+
+WARNING:tensorflow:From /scratch/hy2611/CNN_attention/main/new/vgg_16.py:15: sigmoid_cross_entropy (from tensorflow.contrib.losses.python.losses.loss_ops) is deprecated and will be removed after 2016-12-30.
+Instructions for updating:
+Use tf.losses.sigmoid_cross_entropy instead. Note that the order of the predictions and labels arguments has been changed.
+WARNING:tensorflow:From /ext3/envs/vgg16_env/lib/python2.7/site-packages/tensorflow_core/python/ops/nn_impl.py:183: where (from tensorflow.python.ops.array_ops) is deprecated and will be removed in a future version.
+Instructions for updating:
+Use tf.where in 2.0, which has the same broadcast rule as np.where
+WARNING:tensorflow:From /ext3/envs/vgg16_env/lib/python2.7/site-packages/tensorflow_core/contrib/losses/python/losses/loss_ops.py:322: compute_weighted_loss (from tensorflow.contrib.losses.python.losses.loss_ops) is deprecated and will be removed after 2016-12-30.
+Instructions for updating:
+Use tf.losses.compute_weighted_loss instead.
+WARNING:tensorflow:From /ext3/envs/vgg16_env/lib/python2.7/site-packages/tensorflow_core/contrib/losses/python/losses/loss_ops.py:152: div (from tensorflow.python.ops.math_ops) is deprecated and will be removed in a future version.
+Instructions for updating:
+Deprecated in favor of operator or tf.math.divide.
+WARNING:tensorflow:From /ext3/envs/vgg16_env/lib/python2.7/site-packages/tensorflow_core/contrib/losses/python/losses/loss_ops.py:121: add_loss (from tensorflow.contrib.losses.python.losses.loss_ops) is deprecated and will be removed after 2016-12-30.
+Instructions for updating:
+Use tf.losses.add_loss instead.
+WARNING:tensorflow:From /scratch/hy2611/CNN_attention/main/new/vgg_16.py:17: The name tf.train.AdamOptimizer is deprecated. Please use tf.compat.v1.train.AdamOptimizer instead.
+
+WARNING:tensorflow:From /scratch/hy2611/CNN_attention/main/new/vgg_16.py:25: The name tf.global_variables_initializer is deprecated. Please use tf.compat.v1.global_variables_initializer instead.
+
+WARNING:tensorflow:From /scratch/hy2611/CNN_attention/main/new/main.py:82: The name tf.train.Saver is deprecated. Please use tf.compat.v1.train.Saver instead.
+
+
+Verifying paths:
+tc_path: /scratch/hy2611/CNN_attention/Data/VGG16/object_GradsTCs exists
+weight_path: /scratch/hy2611/CNN_attention/Data/VGG16 exists
+image_path: /scratch/hy2611/CNN_attention/Data/VGG16/images exists
+save_path: /scratch/hy2611/CNN_attention/Data/VGG16 exists
+
+Initializing model...
+('c11', [1, 224, 224, 64])
+('c12', [1, 224, 224, 64])
+('c21', [1, 112, 112, 128])
+('c22', [1, 112, 112, 128])
+('c31', [1, 56, 56, 256])
+('c32', [1, 56, 56, 256])
+('c33', [1, 56, 56, 256])
+('c41', [1, 28, 28, 512])
+('c42', [1, 28, 28, 512])
+('c43', [1, 28, 28, 512])
+('c51', [1, 14, 14, 512])
+('c52', [1, 14, 14, 512])
+('c53', [1, 14, 14, 512])
+(0, 'conv1_1_W', (3, 3, 3, 64))
+(1, 'conv1_1_b', (64,))
+(2, 'conv1_2_W', (3, 3, 64, 64))
+(3, 'conv1_2_b', (64,))
+(4, 'conv2_1_W', (3, 3, 64, 128))
+(5, 'conv2_1_b', (128,))
+(6, 'conv2_2_W', (3, 3, 128, 128))
+(7, 'conv2_2_b', (128,))
+(8, 'conv3_1_W', (3, 3, 128, 256))
+(9, 'conv3_1_b', (256,))
+(10, 'conv3_2_W', (3, 3, 256, 256))
+(11, 'conv3_2_b', (256,))
+(12, 'conv3_3_W', (3, 3, 256, 256))
+(13, 'conv3_3_b', (256,))
+(14, 'conv4_1_W', (3, 3, 256, 512))
+(15, 'conv4_1_b', (512,))
+(16, 'conv4_2_W', (3, 3, 512, 512))
+(17, 'conv4_2_b', (512,))
+(18, 'conv4_3_W', (3, 3, 512, 512))
+(19, 'conv4_3_b', (512,))
+(20, 'conv5_1_W', (3, 3, 512, 512))
+(21, 'conv5_1_b', (512,))
+(22, 'conv5_2_W', (3, 3, 512, 512))
+(23, 'conv5_2_b', (512,))
+(24, 'conv5_3_W', (3, 3, 512, 512))
+(25, 'conv5_3_b', (512,))
+(26, 'fc6_W', (25088, 4096))
+(27, 'fc6_b', (4096,))
+(28, 'fc7_W', (4096, 4096))
+(29, 'fc7_b', (4096,))
+Checking checkpoint files:
+Data file: /scratch/hy2611/CNN_attention/Data/VGG16/catbins/catbin_5.ckpt.data-00000-of-00001 - Found
+Index file: /scratch/hy2611/CNN_attention/Data/VGG16/catbins/catbin_5.ckpt.index - Found
+Loading checkpoint from: /scratch/hy2611/CNN_attention/Data/VGG16/catbins/catbin_5.ckpt
+Checkpoint loaded successfully
+
+Initializing components...
+Found tuning curves file: /scratch/hy2611/CNN_attention/Data/VGG16/object_GradsTCs/featvecs20_train35_c.txt
+
+Loading category 5 data...
+Original positive images shape: (2, 224, 224, 3)
+
+Processing data...
+
+Processing attention strength 0.0
+Attention vector: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
+
+Processing batch 1/2
+Attention strength: 0.0
+Generating tuning curve attention maps...
+Successfully generated 13 attention maps
+Computing saliency maps...
+Saliency statistics: min=0.00000, max=1.00000, mean=0.06079, std=0.06400
+Saliency map shape: (1, 224, 224)
+Non-zero elements: 50175
+Value range: 0.0 - 1.0
+Saliency map shape: (1, 224, 224)
+Non-zero elements: 50175
+Value range: 0.0 - 1.0
+
+=== Debug Shapes After saliency computation ===
+Saliency map shape: (1, 224, 224)
+Attention map 0 shape: (1, 224, 224, 64)
+Attention map 1 shape: (1, 224, 224, 64)
+Attention map 2 shape: (1, 112, 112, 128)
+Attention map 3 shape: (1, 112, 112, 128)
+Attention map 4 shape: (1, 56, 56, 256)
+Attention map 5 shape: (1, 56, 56, 256)
+Attention map 6 shape: (1, 56, 56, 256)
+Attention map 7 shape: (1, 28, 28, 512)
+Attention map 8 shape: (1, 28, 28, 512)
+Attention map 9 shape: (1, 28, 28, 512)
+Attention map 10 shape: (1, 14, 14, 512)
+Attention map 11 shape: (1, 14, 14, 512)
+Attention map 12 shape: (1, 14, 14, 512)
+Successfully generated saliency maps
+Comparing saliency and attention maps...
+
+After resizing:
+Target shape: (224, 224)
+Saliency map shape: (224, 224)
+Attention map shape: (224, 224)
+
+Normalized maps statistics:
+Saliency - min: 0.00000, max: 1.00000, mean: 0.06079, std: 0.06400
+Attention - min: 0.00000, max: 1.00000, mean: 0.44372, std: 0.12503
+
+Metrics for layer 0:
+  pearson_correlation: 0.0009
+  kl_divergence: -4698.9736
+  ssim: 0.0454
+  iou: 0.1415
+Layer 0 metrics:
+  pearson_correlation: 0.0009
+  kl_divergence: -4698.9736
+  ssim: 0.0454
+  iou: 0.1415
+
+After resizing:
+Target shape: (224, 224)
+Saliency map shape: (224, 224)
+Attention map shape: (224, 224)
+
+Normalized maps statistics:
+Saliency - min: 0.00000, max: 1.00000, mean: 0.06079, std: 0.06400
+Attention - min: 0.00000, max: 1.00000, mean: 0.40185, std: 0.12029
+
+Metrics for layer 1:
+  pearson_correlation: -0.0006
+  kl_divergence: -4375.1567
+  ssim: 0.0511
+  iou: 0.1426
+Layer 1 metrics:
+  pearson_correlation: -0.0006
+  kl_divergence: -4375.1567
+  ssim: 0.0511
+  iou: 0.1426
+
+After resizing:
+Target shape: (112, 112)
+Saliency map shape: (112, 112)
+Attention map shape: (112, 112)
+
+Normalized maps statistics:
+Saliency - min: 0.00000, max: 1.00000, mean: 0.07963, std: 0.07093
+Attention - min: 0.00000, max: 1.00000, mean: 0.42090, std: 0.12677
+
+Metrics for layer 2:
+  pearson_correlation: -0.0125
+  kl_divergence: -1297.1346
+  ssim: 0.0561
+  iou: 0.1393
+Layer 2 metrics:
+  pearson_correlation: -0.0125
+  kl_divergence: -1297.1346
+  ssim: 0.0561
+  iou: 0.1393
+
+After resizing:
+Target shape: (112, 112)
+Saliency map shape: (112, 112)
+Attention map shape: (112, 112)
+
+Normalized maps statistics:
+Saliency - min: 0.00000, max: 1.00000, mean: 0.07963, std: 0.07093
+Attention - min: 0.00000, max: 1.00000, mean: 0.44003, std: 0.13255
+
+Metrics for layer 3:
+  pearson_correlation: 0.0053
+  kl_divergence: -1347.8384
+  ssim: 0.0556
+  iou: 0.1404
+Layer 3 metrics:
+  pearson_correlation: 0.0053
+  kl_divergence: -1347.8384
+  ssim: 0.0556
+  iou: 0.1404
+
+After resizing:
+Target shape: (56, 56)
+Saliency map shape: (56, 56)
+Attention map shape: (56, 56)
+
+Normalized maps statistics:
+Saliency - min: 0.00000, max: 1.00000, mean: 0.11024, std: 0.10024
+Attention - min: 0.00000, max: 1.00000, mean: 0.46055, std: 0.13668
+
+Metrics for layer 4:
+  pearson_correlation: -0.0070
+  kl_divergence: -362.3446
+  ssim: 0.0595
+  iou: 0.1264
+Layer 4 metrics:
+  pearson_correlation: -0.0070
+  kl_divergence: -362.3446
+  ssim: 0.0595
+  iou: 0.1264
+
+After resizing:
+Target shape: (56, 56)
+Saliency map shape: (56, 56)
+Attention map shape: (56, 56)
+
+Normalized maps statistics:
+Saliency - min: 0.00000, max: 1.00000, mean: 0.11024, std: 0.10024
+Attention - min: 0.00000, max: 1.00000, mean: 0.50377, std: 0.14644
+
+Metrics for layer 5:
+  pearson_correlation: -0.0085
+  kl_divergence: -390.5598
+  ssim: 0.0446
+  iou: 0.1420
+Layer 5 metrics:
+  pearson_correlation: -0.0085
+  kl_divergence: -390.5598
+  ssim: 0.0446
+  iou: 0.1420
+
+After resizing:
+Target shape: (56, 56)
+Saliency map shape: (56, 56)
+Attention map shape: (56, 56)
+
+Normalized maps statistics:
+Saliency - min: 0.00000, max: 1.00000, mean: 0.11024, std: 0.10024
+Attention - min: 0.00000, max: 1.00000, mean: 0.50699, std: 0.15060
+
+Metrics for layer 6:
+  pearson_correlation: -0.0145
+  kl_divergence: -391.5804
+  ssim: 0.0530
+  iou: 0.1437
+Layer 6 metrics:
+  pearson_correlation: -0.0145
+  kl_divergence: -391.5804
+  ssim: 0.0530
+  iou: 0.1437
+
+After resizing:
+Target shape: (28, 28)
+Saliency map shape: (28, 28)
+Attention map shape: (28, 28)
+
+Normalized maps statistics:
+Saliency - min: 0.00000, max: 1.00000, mean: 0.12111, std: 0.11528
+Attention - min: 0.00000, max: 1.00000, mean: 0.44368, std: 0.16577
+
+Metrics for layer 7:
+  pearson_correlation: 0.0696
+  kl_divergence: -82.8287
+  ssim: 0.0830
+  iou: 0.1737
+Layer 7 metrics:
+  pearson_correlation: 0.0696
+  kl_divergence: -82.8287
+  ssim: 0.0830
+  iou: 0.1737
+
+After resizing:
+Target shape: (28, 28)
+Saliency map shape: (28, 28)
+Attention map shape: (28, 28)
+
+Normalized maps statistics:
+Saliency - min: 0.00000, max: 1.00000, mean: 0.12111, std: 0.11528
+Attention - min: 0.00000, max: 1.00000, mean: 0.48769, std: 0.15351
+
+Metrics for layer 8:
+  pearson_correlation: -0.0073
+  kl_divergence: -92.3872
+  ssim: 0.0462
+  iou: 0.1429
+Layer 8 metrics:
+  pearson_correlation: -0.0073
+  kl_divergence: -92.3872
+  ssim: 0.0462
+  iou: 0.1429
+
+After resizing:
+Target shape: (28, 28)
+Saliency map shape: (28, 28)
+Attention map shape: (28, 28)
+
+Normalized maps statistics:
+Saliency - min: 0.00000, max: 1.00000, mean: 0.12111, std: 0.11528
+Attention - min: 0.00000, max: 1.00000, mean: 0.54397, std: 0.15906
+
+Metrics for layer 9:
+  pearson_correlation: -0.0843
+  kl_divergence: -98.0822
+  ssim: -0.0005
+  iou: 0.1232
+Layer 9 metrics:
+  pearson_correlation: -0.0843
+  kl_divergence: -98.0822
+  ssim: -0.0005
+  iou: 0.1232
+
+After resizing:
+Target shape: (14, 14)
+Saliency map shape: (14, 14)
+Attention map shape: (14, 14)
+
+Normalized maps statistics:
+Saliency - min: 0.00000, max: 1.00000, mean: 0.16107, std: 0.13879
+Attention - min: 0.00000, max: 1.00000, mean: 0.43943, std: 0.17577
+
+Metrics for layer 10:
+  pearson_correlation: -0.0012
+  kl_divergence: -17.5698
+  ssim: 0.0346
+  iou: 0.1529
+Layer 10 metrics:
+  pearson_correlation: -0.0012
+  kl_divergence: -17.5698
+  ssim: 0.0346
+  iou: 0.1529
+
+After resizing:
+Target shape: (14, 14)
+Saliency map shape: (14, 14)
+Attention map shape: (14, 14)
+
+Normalized maps statistics:
+Saliency - min: 0.00000, max: 1.00000, mean: 0.16107, std: 0.13879
+Attention - min: 0.00000, max: 1.00000, mean: 0.48424, std: 0.20428
+
+Metrics for layer 11:
+  pearson_correlation: -0.0097
+  kl_divergence: -19.1959
+  ssim: 0.0284
+  iou: 0.1011
+Layer 11 metrics:
+  pearson_correlation: -0.0097
+  kl_divergence: -19.1959
+  ssim: 0.0284
+  iou: 0.1011
+
+After resizing:
+Target shape: (14, 14)
+Saliency map shape: (14, 14)
+Attention map shape: (14, 14)
+
+Normalized maps statistics:
+Saliency - min: 0.00000, max: 1.00000, mean: 0.16107, std: 0.13879
+Attention - min: 0.00000, max: 1.00000, mean: 0.41528, std: 0.17867
+
+Metrics for layer 12:
+  pearson_correlation: 0.0096
+  kl_divergence: -14.1534
+  ssim: 0.0491
+  iou: 0.1264
+Layer 12 metrics:
+  pearson_correlation: 0.0096
+  kl_divergence: -14.1534
+  ssim: 0.0491
+  iou: 0.1264
+Analyzing attention effects...
+Computing baseline responses...
+Computing responses with attention...
+
+Creating feed dict:
+
+Creating feed dict:
+Successfully analyzed attention effects
+Generating visualizations...
+Saliency (final) stats at visualization: min=0.00000, max=1.00000, mean=0.06079, std=0.06400
+Saved visualization for image 0
+Saved batch results to /scratch/hy2611/CNN_attention/Data/VGG16/attention_results_cat5_layer1/batch_0_strength_0.0_results.npy
+
+Processing batch 2/2
+Attention strength: 0.0
+Generating tuning curve attention maps...
+Successfully generated 13 attention maps
+Computing saliency maps...
+Saliency statistics: min=0.00000, max=1.00000, mean=0.03700, std=0.03738
+Saliency map shape: (1, 224, 224)
+Non-zero elements: 50175
+Value range: 0.0 - 1.0
+Saliency map shape: (1, 224, 224)
+Non-zero elements: 50175
+Value range: 0.0 - 1.0
+
+=== Debug Shapes After saliency computation ===
+Saliency map shape: (1, 224, 224)
+Attention map 0 shape: (1, 224, 224, 64)
+Attention map 1 shape: (1, 224, 224, 64)
+Attention map 2 shape: (1, 112, 112, 128)
+Attention map 3 shape: (1, 112, 112, 128)
+Attention map 4 shape: (1, 56, 56, 256)
+Attention map 5 shape: (1, 56, 56, 256)
+Attention map 6 shape: (1, 56, 56, 256)
+Attention map 7 shape: (1, 28, 28, 512)
+Attention map 8 shape: (1, 28, 28, 512)
+Attention map 9 shape: (1, 28, 28, 512)
+Attention map 10 shape: (1, 14, 14, 512)
+Attention map 11 shape: (1, 14, 14, 512)
+Attention map 12 shape: (1, 14, 14, 512)
+Successfully generated saliency maps
+Comparing saliency and attention maps...
+
+After resizing:
+Target shape: (224, 224)
+Saliency map shape: (224, 224)
+Attention map shape: (224, 224)
+
+Normalized maps statistics:
+Saliency - min: 0.00000, max: 1.00000, mean: 0.03700, std: 0.03738
+Attention - min: 0.00000, max: 1.00000, mean: 0.42483, std: 0.12865
+
+Metrics for layer 0:
+  pearson_correlation: -0.0035
+  kl_divergence: -3753.6528
+  ssim: 0.0304
+  iou: 0.1419
+Layer 0 metrics:
+  pearson_correlation: -0.0035
+  kl_divergence: -3753.6528
+  ssim: 0.0304
+  iou: 0.1419
+
+After resizing:
+Target shape: (224, 224)
+Saliency map shape: (224, 224)
+Attention map shape: (224, 224)
+
+Normalized maps statistics:
+Saliency - min: 0.00000, max: 1.00000, mean: 0.03700, std: 0.03738
+Attention - min: 0.00000, max: 1.00000, mean: 0.43015, std: 0.11891
+
+Metrics for layer 1:
+  pearson_correlation: -0.0110
+  kl_divergence: -3789.7854
+  ssim: 0.0336
+  iou: 0.1412
+Layer 1 metrics:
+  pearson_correlation: -0.0110
+  kl_divergence: -3789.7854
+  ssim: 0.0336
+  iou: 0.1412
+
+After resizing:
+Target shape: (112, 112)
+Saliency map shape: (112, 112)
+Attention map shape: (112, 112)
+
+Normalized maps statistics:
+Saliency - min: 0.00000, max: 1.00000, mean: 0.07117, std: 0.06162
+Attention - min: 0.00000, max: 1.00000, mean: 0.39616, std: 0.11476
+
+Metrics for layer 2:
+  pearson_correlation: 0.0005
+  kl_divergence: -1234.7073
+  ssim: 0.0684
+  iou: 0.1449
+Layer 2 metrics:
+  pearson_correlation: 0.0005
+  kl_divergence: -1234.7073
+  ssim: 0.0684
+  iou: 0.1449
+
+After resizing:
+Target shape: (112, 112)
+Saliency map shape: (112, 112)
+Attention map shape: (112, 112)
+
+Normalized maps statistics:
+Saliency - min: 0.00000, max: 1.00000, mean: 0.07117, std: 0.06162
+Attention - min: 0.00000, max: 1.00000, mean: 0.47740, std: 0.12750
+
+Metrics for layer 3:
+  pearson_correlation: -0.0062
+  kl_divergence: -1407.1215
+  ssim: 0.0480
+  iou: 0.1393
+Layer 3 metrics:
+  pearson_correlation: -0.0062
+  kl_divergence: -1407.1215
+  ssim: 0.0480
+  iou: 0.1393
+
+After resizing:
+Target shape: (56, 56)
+Saliency map shape: (56, 56)
+Attention map shape: (56, 56)
+
+Normalized maps statistics:
+Saliency - min: 0.00000, max: 1.00000, mean: 0.11423, std: 0.10009
+Attention - min: 0.00000, max: 1.00000, mean: 0.51182, std: 0.12782
+
+Metrics for layer 4:
+  pearson_correlation: -0.0105
+  kl_divergence: -416.4832
+  ssim: 0.0515
+  iou: 0.1371
+Layer 4 metrics:
+  pearson_correlation: -0.0105
+  kl_divergence: -416.4832
+  ssim: 0.0515
+  iou: 0.1371
+
+After resizing:
+Target shape: (56, 56)
+Saliency map shape: (56, 56)
+Attention map shape: (56, 56)
+
+Normalized maps statistics:
+Saliency - min: 0.00000, max: 1.00000, mean: 0.11423, std: 0.10009
+Attention - min: 0.00000, max: 1.00000, mean: 0.41682, std: 0.13975
+
+Metrics for layer 5:
+  pearson_correlation: -0.0001
+  kl_divergence: -326.9590
+  ssim: 0.0627
+  iou: 0.1454
+Layer 5 metrics:
+  pearson_correlation: -0.0001
+  kl_divergence: -326.9590
+  ssim: 0.0627
+  iou: 0.1454
+
+After resizing:
+Target shape: (56, 56)
+Saliency map shape: (56, 56)
+Attention map shape: (56, 56)
+
+Normalized maps statistics:
+Saliency - min: 0.00000, max: 1.00000, mean: 0.11423, std: 0.10009
+Attention - min: 0.00000, max: 1.00000, mean: 0.50623, std: 0.14436
+
+Metrics for layer 6:
+  pearson_correlation: 0.0326
+  kl_divergence: -411.0579
+  ssim: 0.0632
+  iou: 0.1496
+Layer 6 metrics:
+  pearson_correlation: 0.0326
+  kl_divergence: -411.0579
+  ssim: 0.0632
+  iou: 0.1496
+
+After resizing:
+Target shape: (28, 28)
+Saliency map shape: (28, 28)
+Attention map shape: (28, 28)
+
+Normalized maps statistics:
+Saliency - min: 0.00000, max: 1.00000, mean: 0.07594, std: 0.07019
+Attention - min: 0.00000, max: 1.00000, mean: 0.40266, std: 0.14864
+
+Metrics for layer 7:
+  pearson_correlation: -0.0178
+  kl_divergence: -72.0599
+  ssim: 0.0358
+  iou: 0.1496
+Layer 7 metrics:
+  pearson_correlation: -0.0178
+  kl_divergence: -72.0599
+  ssim: 0.0358
+  iou: 0.1496
+
+After resizing:
+Target shape: (28, 28)
+Saliency map shape: (28, 28)
+Attention map shape: (28, 28)
+
+Normalized maps statistics:
+Saliency - min: 0.00000, max: 1.00000, mean: 0.07594, std: 0.07019
+Attention - min: 0.00000, max: 1.00000, mean: 0.56029, std: 0.14856
+
+Metrics for layer 8:
+  pearson_correlation: 0.0066
+  kl_divergence: -96.3391
+  ssim: 0.0271
+  iou: 0.1632
+Layer 8 metrics:
+  pearson_correlation: 0.0066
+  kl_divergence: -96.3391
+  ssim: 0.0271
+  iou: 0.1632
+
+After resizing:
+Target shape: (28, 28)
+Saliency map shape: (28, 28)
+Attention map shape: (28, 28)
+
+Normalized maps statistics:
+Saliency - min: 0.00000, max: 1.00000, mean: 0.07594, std: 0.07019
+Attention - min: 0.00000, max: 1.00000, mean: 0.47888, std: 0.14097
+
+Metrics for layer 9:
+  pearson_correlation: -0.0049
+  kl_divergence: -87.4797
+  ssim: 0.0500
+  iou: 0.1395
+Layer 9 metrics:
+  pearson_correlation: -0.0049
+  kl_divergence: -87.4797
+  ssim: 0.0500
+  iou: 0.1395
+
+After resizing:
+Target shape: (14, 14)
+Saliency map shape: (14, 14)
+Attention map shape: (14, 14)
+
+Normalized maps statistics:
+Saliency - min: 0.00000, max: 1.00000, mean: 0.18658, std: 0.16890
+Attention - min: 0.00000, max: 1.00000, mean: 0.45788, std: 0.19410
+
+Metrics for layer 10:
+  pearson_correlation: 0.0067
+  kl_divergence: -8.1384
+  ssim: 0.0373
+  iou: 0.1395
+Layer 10 metrics:
+  pearson_correlation: 0.0067
+  kl_divergence: -8.1384
+  ssim: 0.0373
+  iou: 0.1395
+
+After resizing:
+Target shape: (14, 14)
+Saliency map shape: (14, 14)
+Attention map shape: (14, 14)
+
+Normalized maps statistics:
+Saliency - min: 0.00000, max: 1.00000, mean: 0.18658, std: 0.16890
+Attention - min: 0.00000, max: 1.00000, mean: 0.53245, std: 0.19626
+
+Metrics for layer 11:
+  pearson_correlation: 0.0218
+  kl_divergence: -17.6240
+  ssim: 0.0479
+  iou: 0.1136
+Layer 11 metrics:
+  pearson_correlation: 0.0218
+  kl_divergence: -17.6240
+  ssim: 0.0479
+  iou: 0.1136
+
+After resizing:
+Target shape: (14, 14)
+Saliency map shape: (14, 14)
+Attention map shape: (14, 14)
+
+Normalized maps statistics:
+Saliency - min: 0.00000, max: 1.00000, mean: 0.18658, std: 0.16890
+Attention - min: 0.00000, max: 1.00000, mean: 0.51917, std: 0.18491
+
+Metrics for layer 12:
+  pearson_correlation: 0.0329
+  kl_divergence: -20.1833
+  ssim: 0.0562
+  iou: 0.1529
+Layer 12 metrics:
+  pearson_correlation: 0.0329
+  kl_divergence: -20.1833
+  ssim: 0.0562
+  iou: 0.1529
+Analyzing attention effects...
+Computing baseline responses...
+Computing responses with attention...
+
+Creating feed dict:
+
+Creating feed dict:
+Successfully analyzed attention effects
+Generating visualizations...
+Saliency (final) stats at visualization: min=0.00000, max=1.00000, mean=0.03700, std=0.03738
+Saved visualization for image 0
+Saved batch results to /scratch/hy2611/CNN_attention/Data/VGG16/attention_results_cat5_layer1/batch_1_strength_0.0_results.npy
+
+Processing attention strength 0.4
+Attention vector: [0.  0.4 0.  0.  0.  0.  0.  0.  0.  0.  0.  0.  0. ]
+
+Processing batch 1/2
+Attention strength: 0.4
+Generating tuning curve attention maps...
+Successfully generated 13 attention maps
+Computing saliency maps...
+Saliency statistics: min=0.00000, max=1.00000, mean=0.06079, std=0.06400
+Saliency map shape: (1, 224, 224)
+Non-zero elements: 50175
+Value range: 0.0 - 1.0
+Saliency map shape: (1, 224, 224)
+Non-zero elements: 50175
+Value range: 0.0 - 1.0
+
+=== Debug Shapes After saliency computation ===
+Saliency map shape: (1, 224, 224)
+Attention map 0 shape: (1, 224, 224, 64)
+Attention map 1 shape: (1, 224, 224, 64)
+Attention map 2 shape: (1, 112, 112, 128)
+Attention map 3 shape: (1, 112, 112, 128)
+Attention map 4 shape: (1, 56, 56, 256)
+Attention map 5 shape: (1, 56, 56, 256)
+Attention map 6 shape: (1, 56, 56, 256)
+Attention map 7 shape: (1, 28, 28, 512)
+Attention map 8 shape: (1, 28, 28, 512)
+Attention map 9 shape: (1, 28, 28, 512)
+Attention map 10 shape: (1, 14, 14, 512)
+Attention map 11 shape: (1, 14, 14, 512)
+Attention map 12 shape: (1, 14, 14, 512)
+Successfully generated saliency maps
+Comparing saliency and attention maps...
+
+After resizing:
+Target shape: (224, 224)
+Saliency map shape: (224, 224)
+Attention map shape: (224, 224)
+
+Normalized maps statistics:
+Saliency - min: 0.00000, max: 1.00000, mean: 0.06079, std: 0.06400
+Attention - min: 0.00000, max: 1.00000, mean: 0.45440, std: 0.11404
+
+Metrics for layer 0:
+  pearson_correlation: 0.0037
+  kl_divergence: -4805.3774
+  ssim: 0.0510
+  iou: 0.1430
+Layer 0 metrics:
+  pearson_correlation: 0.0037
+  kl_divergence: -4805.3774
+  ssim: 0.0510
+  iou: 0.1430
+
+After resizing:
+Target shape: (224, 224)
+Saliency map shape: (224, 224)
+Attention map shape: (224, 224)
+
+Normalized maps statistics:
+Saliency - min: 0.00000, max: 1.00000, mean: 0.06079, std: 0.06400
+Attention - min: 0.00000, max: 1.00000, mean: 0.48530, std: 0.11319
+
+Metrics for layer 1:
+  pearson_correlation: 0.0037
+  kl_divergence: -5017.2178
+  ssim: 0.0481
+  iou: 0.1428
+Layer 1 metrics:
+  pearson_correlation: 0.0037
+  kl_divergence: -5017.2178
+  ssim: 0.0481
+  iou: 0.1428
+
+After resizing:
+Target shape: (112, 112)
+Saliency map shape: (112, 112)
+Attention map shape: (112, 112)
+
+Normalized maps statistics:
+Saliency - min: 0.00000, max: 1.00000, mean: 0.07963, std: 0.07093
+Attention - min: 0.00000, max: 1.00000, mean: 0.44966, std: 0.13956
+
+Metrics for layer 2:
+  pearson_correlation: -0.0128
+  kl_divergence: -1360.0225
+  ssim: 0.0488
+  iou: 0.1329
+Layer 2 metrics:
+  pearson_correlation: -0.0128
+  kl_divergence: -1360.0225
+  ssim: 0.0488
+  iou: 0.1329
+
+After resizing:
+Target shape: (112, 112)
+Saliency map shape: (112, 112)
+Attention map shape: (112, 112)
+
+Normalized maps statistics:
+Saliency - min: 0.00000, max: 1.00000, mean: 0.07963, std: 0.07093
+Attention - min: 0.00000, max: 1.00000, mean: 0.53119, std: 0.12676
+
+Metrics for layer 3:
+  pearson_correlation: -0.0026
+  kl_divergence: -1554.1204
+  ssim: 0.0483
+  iou: 0.1362
+Layer 3 metrics:
+  pearson_correlation: -0.0026
+  kl_divergence: -1554.1204
+  ssim: 0.0483
+  iou: 0.1362
+
+After resizing:
+Target shape: (56, 56)
+Saliency map shape: (56, 56)
+Attention map shape: (56, 56)
+
+Normalized maps statistics:
+Saliency - min: 0.00000, max: 1.00000, mean: 0.11024, std: 0.10024
+Attention - min: 0.00000, max: 1.00000, mean: 0.45894, std: 0.15507
+
+Metrics for layer 4:
+  pearson_correlation: 0.0260
+  kl_divergence: -351.7322
+  ssim: 0.0560
+  iou: 0.1598
+Layer 4 metrics:
+  pearson_correlation: 0.0260
+  kl_divergence: -351.7322
+  ssim: 0.0560
+  iou: 0.1598
+
+After resizing:
+Target shape: (56, 56)
+Saliency map shape: (56, 56)
+Attention map shape: (56, 56)
+
+Normalized maps statistics:
+Saliency - min: 0.00000, max: 1.00000, mean: 0.11024, std: 0.10024
+Attention - min: 0.00000, max: 1.00000, mean: 0.48284, std: 0.15063
+
+Metrics for layer 5:
+  pearson_correlation: -0.0189
+  kl_divergence: -368.5446
+  ssim: 0.0505
+  iou: 0.1429
+Layer 5 metrics:
+  pearson_correlation: -0.0189
+  kl_divergence: -368.5446
+  ssim: 0.0505
+  iou: 0.1429
+
+After resizing:
+Target shape: (56, 56)
+Saliency map shape: (56, 56)
+Attention map shape: (56, 56)
+
+Normalized maps statistics:
+Saliency - min: 0.00000, max: 1.00000, mean: 0.11024, std: 0.10024
+Attention - min: 0.00000, max: 1.00000, mean: 0.47071, std: 0.14866
+
+Metrics for layer 6:
+  pearson_correlation: 0.0164
+  kl_divergence: -368.1803
+  ssim: 0.0623
+  iou: 0.1504
+Layer 6 metrics:
+  pearson_correlation: 0.0164
+  kl_divergence: -368.1803
+  ssim: 0.0623
+  iou: 0.1504
+
+After resizing:
+Target shape: (28, 28)
+Saliency map shape: (28, 28)
+Attention map shape: (28, 28)
+
+Normalized maps statistics:
+Saliency - min: 0.00000, max: 1.00000, mean: 0.12111, std: 0.11528
+Attention - min: 0.00000, max: 1.00000, mean: 0.49722, std: 0.18094
+
+Metrics for layer 7:
+  pearson_correlation: 0.0035
+  kl_divergence: -90.6250
+  ssim: 0.0284
+  iou: 0.1297
+Layer 7 metrics:
+  pearson_correlation: 0.0035
+  kl_divergence: -90.6250
+  ssim: 0.0284
+  iou: 0.1297
+
+After resizing:
+Target shape: (28, 28)
+Saliency map shape: (28, 28)
+Attention map shape: (28, 28)
+
+Normalized maps statistics:
+Saliency - min: 0.00000, max: 1.00000, mean: 0.12111, std: 0.11528
+Attention - min: 0.00000, max: 1.00000, mean: 0.49876, std: 0.15552
+
+Metrics for layer 8:
+  pearson_correlation: 0.0310
+  kl_divergence: -91.7314
+  ssim: 0.0620
+  iou: 0.1598
+Layer 8 metrics:
+  pearson_correlation: 0.0310
+  kl_divergence: -91.7314
+  ssim: 0.0620
+  iou: 0.1598
+
+After resizing:
+Target shape: (28, 28)
+Saliency map shape: (28, 28)
+Attention map shape: (28, 28)
+
+Normalized maps statistics:
+Saliency - min: 0.00000, max: 1.00000, mean: 0.12111, std: 0.11528
+Attention - min: 0.00000, max: 1.00000, mean: 0.46949, std: 0.16550
+
+Metrics for layer 9:
+  pearson_correlation: 0.0004
+  kl_divergence: -83.7949
+  ssim: 0.0619
+  iou: 0.1632
+Layer 9 metrics:
+  pearson_correlation: 0.0004
+  kl_divergence: -83.7949
+  ssim: 0.0619
+  iou: 0.1632
+
+After resizing:
+Target shape: (14, 14)
+Saliency map shape: (14, 14)
+Attention map shape: (14, 14)
+
+Normalized maps statistics:
+Saliency - min: 0.00000, max: 1.00000, mean: 0.16107, std: 0.13879
+Attention - min: 0.00000, max: 1.00000, mean: 0.47215, std: 0.18284
+
+Metrics for layer 10:
+  pearson_correlation: 0.0110
+  kl_divergence: -21.3328
+  ssim: 0.0830
+  iou: 0.1667
+Layer 10 metrics:
+  pearson_correlation: 0.0110
+  kl_divergence: -21.3328
+  ssim: 0.0830
+  iou: 0.1667
+
+After resizing:
+Target shape: (14, 14)
+Saliency map shape: (14, 14)
+Attention map shape: (14, 14)
+
+Normalized maps statistics:
+Saliency - min: 0.00000, max: 1.00000, mean: 0.16107, std: 0.13879
+Attention - min: 0.00000, max: 1.00000, mean: 0.40930, std: 0.18115
+
+Metrics for layer 11:
+  pearson_correlation: -0.0440
+  kl_divergence: -14.0807
+  ssim: 0.0773
+  iou: 0.1395
+Layer 11 metrics:
+  pearson_correlation: -0.0440
+  kl_divergence: -14.0807
+  ssim: 0.0773
+  iou: 0.1395
+
+After resizing:
+Target shape: (14, 14)
+Saliency map shape: (14, 14)
+Attention map shape: (14, 14)
+
+Normalized maps statistics:
+Saliency - min: 0.00000, max: 1.00000, mean: 0.16107, std: 0.13879
+Attention - min: 0.00000, max: 1.00000, mean: 0.49618, std: 0.18778
+
+Metrics for layer 12:
+  pearson_correlation: 0.0531
+  kl_divergence: -17.4987
+  ssim: 0.1277
+  iou: 0.1011
+Layer 12 metrics:
+  pearson_correlation: 0.0531
+  kl_divergence: -17.4987
+  ssim: 0.1277
+  iou: 0.1011
+Analyzing attention effects...
+Computing baseline responses...
+Computing responses with attention...
+
+Creating feed dict:
+
+Creating feed dict:
+Successfully analyzed attention effects
+Generating visualizations...
+Saliency (final) stats at visualization: min=0.00000, max=1.00000, mean=0.06079, std=0.06400
+Saved visualization for image 0
+Saved batch results to /scratch/hy2611/CNN_attention/Data/VGG16/attention_results_cat5_layer1/batch_0_strength_0.4_results.npy
+
+Processing batch 2/2
+Attention strength: 0.4
+Generating tuning curve attention maps...
+Successfully generated 13 attention maps
+Computing saliency maps...
+Saliency statistics: min=0.00000, max=1.00000, mean=0.03700, std=0.03738
+Saliency map shape: (1, 224, 224)
+Non-zero elements: 50175
+Value range: 0.0 - 1.0
+Saliency map shape: (1, 224, 224)
+Non-zero elements: 50175
+Value range: 0.0 - 1.0
+
+=== Debug Shapes After saliency computation ===
+Saliency map shape: (1, 224, 224)
+Attention map 0 shape: (1, 224, 224, 64)
+Attention map 1 shape: (1, 224, 224, 64)
+Attention map 2 shape: (1, 112, 112, 128)
+Attention map 3 shape: (1, 112, 112, 128)
+Attention map 4 shape: (1, 56, 56, 256)
+Attention map 5 shape: (1, 56, 56, 256)
+Attention map 6 shape: (1, 56, 56, 256)
+Attention map 7 shape: (1, 28, 28, 512)
+Attention map 8 shape: (1, 28, 28, 512)
+Attention map 9 shape: (1, 28, 28, 512)
+Attention map 10 shape: (1, 14, 14, 512)
+Attention map 11 shape: (1, 14, 14, 512)
+Attention map 12 shape: (1, 14, 14, 512)
+Successfully generated saliency maps
+Comparing saliency and attention maps...
+
+After resizing:
+Target shape: (224, 224)
+Saliency map shape: (224, 224)
+Attention map shape: (224, 224)
+
+Normalized maps statistics:
+Saliency - min: 0.00000, max: 1.00000, mean: 0.03700, std: 0.03738
+Attention - min: 0.00000, max: 1.00000, mean: 0.44105, std: 0.11896
+
+Metrics for layer 0:
+  pearson_correlation: -0.0015
+  kl_divergence: -3846.7524
+  ssim: 0.0333
+  iou: 0.1407
+Layer 0 metrics:
+  pearson_correlation: -0.0015
+  kl_divergence: -3846.7524
+  ssim: 0.0333
+  iou: 0.1407
+
+After resizing:
+Target shape: (224, 224)
+Saliency map shape: (224, 224)
+Attention map shape: (224, 224)
+
+Normalized maps statistics:
+Saliency - min: 0.00000, max: 1.00000, mean: 0.03700, std: 0.03738
+Attention - min: 0.00000, max: 1.00000, mean: 0.50221, std: 0.11614
+
+Metrics for layer 1:
+  pearson_correlation: -0.0014
+  kl_divergence: -4107.1572
+  ssim: 0.0301
+  iou: 0.1442
+Layer 1 metrics:
+  pearson_correlation: -0.0014
+  kl_divergence: -4107.1572
+  ssim: 0.0301
+  iou: 0.1442
+
+After resizing:
+Target shape: (112, 112)
+Saliency map shape: (112, 112)
+Attention map shape: (112, 112)
+
+Normalized maps statistics:
+Saliency - min: 0.00000, max: 1.00000, mean: 0.07117, std: 0.06162
+Attention - min: 0.00000, max: 1.00000, mean: 0.46619, std: 0.11466
+
+Metrics for layer 2:
+  pearson_correlation: -0.0045
+  kl_divergence: -1392.0814
+  ssim: 0.0585
+  iou: 0.1402
+Layer 2 metrics:
+  pearson_correlation: -0.0045
+  kl_divergence: -1392.0814
+  ssim: 0.0585
+  iou: 0.1402
+
+After resizing:
+Target shape: (112, 112)
+Saliency map shape: (112, 112)
+Attention map shape: (112, 112)
+
+Normalized maps statistics:
+Saliency - min: 0.00000, max: 1.00000, mean: 0.07117, std: 0.06162
+Attention - min: 0.00000, max: 1.00000, mean: 0.46609, std: 0.13253
+
+Metrics for layer 3:
+  pearson_correlation: -0.0062
+  kl_divergence: -1381.4126
+  ssim: 0.0452
+  iou: 0.1364
+Layer 3 metrics:
+  pearson_correlation: -0.0062
+  kl_divergence: -1381.4126
+  ssim: 0.0452
+  iou: 0.1364
+
+After resizing:
+Target shape: (56, 56)
+Saliency map shape: (56, 56)
+Attention map shape: (56, 56)
+
+Normalized maps statistics:
+Saliency - min: 0.00000, max: 1.00000, mean: 0.11423, std: 0.10009
+Attention - min: 0.00000, max: 1.00000, mean: 0.46090, std: 0.14520
+
+Metrics for layer 4:
+  pearson_correlation: -0.0019
+  kl_divergence: -370.8408
+  ssim: 0.0520
+  iou: 0.1496
+Layer 4 metrics:
+  pearson_correlation: -0.0019
+  kl_divergence: -370.8408
+  ssim: 0.0520
+  iou: 0.1496
+
+After resizing:
+Target shape: (56, 56)
+Saliency map shape: (56, 56)
+Attention map shape: (56, 56)
+
+Normalized maps statistics:
+Saliency - min: 0.00000, max: 1.00000, mean: 0.11423, std: 0.10009
+Attention - min: 0.00000, max: 1.00000, mean: 0.48357, std: 0.14077
+
+Metrics for layer 5:
+  pearson_correlation: 0.0035
+  kl_divergence: -391.2833
+  ssim: 0.0498
+  iou: 0.1479
+Layer 5 metrics:
+  pearson_correlation: 0.0035
+  kl_divergence: -391.2833
+  ssim: 0.0498
+  iou: 0.1479
+
+After resizing:
+Target shape: (56, 56)
+Saliency map shape: (56, 56)
+Attention map shape: (56, 56)
+
+Normalized maps statistics:
+Saliency - min: 0.00000, max: 1.00000, mean: 0.11423, std: 0.10009
+Attention - min: 0.00000, max: 1.00000, mean: 0.46273, std: 0.14030
+
+Metrics for layer 6:
+  pearson_correlation: 0.0268
+  kl_divergence: -374.1224
+  ssim: 0.0679
+  iou: 0.1404
+Layer 6 metrics:
+  pearson_correlation: 0.0268
+  kl_divergence: -374.1224
+  ssim: 0.0679
+  iou: 0.1404
+
+After resizing:
+Target shape: (28, 28)
+Saliency map shape: (28, 28)
+Attention map shape: (28, 28)
+
+Normalized maps statistics:
+Saliency - min: 0.00000, max: 1.00000, mean: 0.07594, std: 0.07019
+Attention - min: 0.00000, max: 1.00000, mean: 0.44931, std: 0.16036
+
+Metrics for layer 7:
+  pearson_correlation: 0.0178
+  kl_divergence: -82.9204
+  ssim: 0.0453
+  iou: 0.1329
+Layer 7 metrics:
+  pearson_correlation: 0.0178
+  kl_divergence: -82.9204
+  ssim: 0.0453
+  iou: 0.1329
+
+After resizing:
+Target shape: (28, 28)
+Saliency map shape: (28, 28)
+Attention map shape: (28, 28)
+
+Normalized maps statistics:
+Saliency - min: 0.00000, max: 1.00000, mean: 0.07594, std: 0.07019
+Attention - min: 0.00000, max: 1.00000, mean: 0.49256, std: 0.14784
+
+Metrics for layer 8:
+  pearson_correlation: -0.0058
+  kl_divergence: -88.9478
+  ssim: 0.0319
+  iou: 0.1496
+Layer 8 metrics:
+  pearson_correlation: -0.0058
+  kl_divergence: -88.9478
+  ssim: 0.0319
+  iou: 0.1496
+
+After resizing:
+Target shape: (28, 28)
+Saliency map shape: (28, 28)
+Attention map shape: (28, 28)
+
+Normalized maps statistics:
+Saliency - min: 0.00000, max: 1.00000, mean: 0.07594, std: 0.07019
+Attention - min: 0.00000, max: 1.00000, mean: 0.47718, std: 0.13954
+
+Metrics for layer 9:
+  pearson_correlation: -0.0556
+  kl_divergence: -66.1928
+  ssim: 0.0275
+  iou: 0.1395
+Layer 9 metrics:
+  pearson_correlation: -0.0556
+  kl_divergence: -66.1928
+  ssim: 0.0275
+  iou: 0.1395
+
+After resizing:
+Target shape: (14, 14)
+Saliency map shape: (14, 14)
+Attention map shape: (14, 14)
+
+Normalized maps statistics:
+Saliency - min: 0.00000, max: 1.00000, mean: 0.18658, std: 0.16890
+Attention - min: 0.00000, max: 1.00000, mean: 0.49401, std: 0.16744
+
+Metrics for layer 10:
+  pearson_correlation: -0.0640
+  kl_divergence: -10.7964
+  ssim: -0.0438
+  iou: 0.1529
+Layer 10 metrics:
+  pearson_correlation: -0.0640
+  kl_divergence: -10.7964
+  ssim: -0.0438
+  iou: 0.1529
+
+After resizing:
+Target shape: (14, 14)
+Saliency map shape: (14, 14)
+Attention map shape: (14, 14)
+
+Normalized maps statistics:
+Saliency - min: 0.00000, max: 1.00000, mean: 0.18658, std: 0.16890
+Attention - min: 0.00000, max: 1.00000, mean: 0.47335, std: 0.23057
+
+Metrics for layer 11:
+  pearson_correlation: -0.0375
+  kl_divergence: -9.6267
+  ssim: 0.0235
+  iou: 0.1395
+Layer 11 metrics:
+  pearson_correlation: -0.0375
+  kl_divergence: -9.6267
+  ssim: 0.0235
+  iou: 0.1395
+
+After resizing:
+Target shape: (14, 14)
+Saliency map shape: (14, 14)
+Attention map shape: (14, 14)
+
+Normalized maps statistics:
+Saliency - min: 0.00000, max: 1.00000, mean: 0.18658, std: 0.16890
+Attention - min: 0.00000, max: 1.00000, mean: 0.46981, std: 0.20554
+
+Metrics for layer 12:
+  pearson_correlation: -0.1204
+  kl_divergence: -12.2890
+  ssim: -0.0590
+  iou: 0.1395
+Layer 12 metrics:
+  pearson_correlation: -0.1204
+  kl_divergence: -12.2890
+  ssim: -0.0590
+  iou: 0.1395
+Analyzing attention effects...
+Computing baseline responses...
+Computing responses with attention...
+
+Creating feed dict:
+
+Creating feed dict:
+Successfully analyzed attention effects
+Generating visualizations...
+Saliency (final) stats at visualization: min=0.00000, max=1.00000, mean=0.03700, std=0.03738
+Saved visualization for image 0
+Saved batch results to /scratch/hy2611/CNN_attention/Data/VGG16/attention_results_cat5_layer1/batch_1_strength_0.4_results.npy
+
+Processing attention strength 0.8
+Attention vector: [0.  0.8 0.  0.  0.  0.  0.  0.  0.  0.  0.  0.  0. ]
+
+Processing batch 1/2
+Attention strength: 0.8
+Generating tuning curve attention maps...
+Successfully generated 13 attention maps
+Computing saliency maps...
+Saliency statistics: min=0.00000, max=1.00000, mean=0.06079, std=0.06400
+Saliency map shape: (1, 224, 224)
+Non-zero elements: 50175
+Value range: 0.0 - 1.0
+Saliency map shape: (1, 224, 224)
+Non-zero elements: 50175
+Value range: 0.0 - 1.0
+
+=== Debug Shapes After saliency computation ===
+Saliency map shape: (1, 224, 224)
+Attention map 0 shape: (1, 224, 224, 64)
+Attention map 1 shape: (1, 224, 224, 64)
+Attention map 2 shape: (1, 112, 112, 128)
+Attention map 3 shape: (1, 112, 112, 128)
+Attention map 4 shape: (1, 56, 56, 256)
+Attention map 5 shape: (1, 56, 56, 256)
+Attention map 6 shape: (1, 56, 56, 256)
+Attention map 7 shape: (1, 28, 28, 512)
+Attention map 8 shape: (1, 28, 28, 512)
+Attention map 9 shape: (1, 28, 28, 512)
+Attention map 10 shape: (1, 14, 14, 512)
+Attention map 11 shape: (1, 14, 14, 512)
+Attention map 12 shape: (1, 14, 14, 512)
+Successfully generated saliency maps
+Comparing saliency and attention maps...
+
+After resizing:
+Target shape: (224, 224)
+Saliency map shape: (224, 224)
+Attention map shape: (224, 224)
+
+Normalized maps statistics:
+Saliency - min: 0.00000, max: 1.00000, mean: 0.06079, std: 0.06400
+Attention - min: 0.00000, max: 1.00000, mean: 0.41655, std: 0.12762
+
+Metrics for layer 0:
+  pearson_correlation: 0.0034
+  kl_divergence: -4484.2568
+  ssim: 0.0463
+  iou: 0.1449
+Layer 0 metrics:
+  pearson_correlation: 0.0034
+  kl_divergence: -4484.2568
+  ssim: 0.0463
+  iou: 0.1449
+
+After resizing:
+Target shape: (224, 224)
+Saliency map shape: (224, 224)
+Attention map shape: (224, 224)
+
+Normalized maps statistics:
+Saliency - min: 0.00000, max: 1.00000, mean: 0.06079, std: 0.06400
+Attention - min: 0.00000, max: 1.00000, mean: 0.47719, std: 0.12389
+
+Metrics for layer 1:
+  pearson_correlation: 0.0085
+  kl_divergence: -4947.8604
+  ssim: 0.0443
+  iou: 0.1464
+Layer 1 metrics:
+  pearson_correlation: 0.0085
+  kl_divergence: -4947.8604
+  ssim: 0.0443
+  iou: 0.1464
+
+After resizing:
+Target shape: (112, 112)
+Saliency map shape: (112, 112)
+Attention map shape: (112, 112)
+
+Normalized maps statistics:
+Saliency - min: 0.00000, max: 1.00000, mean: 0.07963, std: 0.07093
+Attention - min: 0.00000, max: 1.00000, mean: 0.46267, std: 0.12705
+
+Metrics for layer 2:
+  pearson_correlation: -0.0021
+  kl_divergence: -1404.7505
+  ssim: 0.0539
+  iou: 0.1500
+Layer 2 metrics:
+  pearson_correlation: -0.0021
+  kl_divergence: -1404.7505
+  ssim: 0.0539
+  iou: 0.1500
+
+After resizing:
+Target shape: (112, 112)
+Saliency map shape: (112, 112)
+Attention map shape: (112, 112)
+
+Normalized maps statistics:
+Saliency - min: 0.00000, max: 1.00000, mean: 0.07963, std: 0.07093
+Attention - min: 0.00000, max: 1.00000, mean: 0.43485, std: 0.13972
+
+Metrics for layer 3:
+  pearson_correlation: -0.0184
+  kl_divergence: -1318.7800
+  ssim: 0.0484
+  iou: 0.1383
+Layer 3 metrics:
+  pearson_correlation: -0.0184
+  kl_divergence: -1318.7800
+  ssim: 0.0484
+  iou: 0.1383
+
+After resizing:
+Target shape: (56, 56)
+Saliency map shape: (56, 56)
+Attention map shape: (56, 56)
+
+Normalized maps statistics:
+Saliency - min: 0.00000, max: 1.00000, mean: 0.11024, std: 0.10024
+Attention - min: 0.00000, max: 1.00000, mean: 0.50629, std: 0.13218
+
+Metrics for layer 4:
+  pearson_correlation: 0.0134
+  kl_divergence: -401.2447
+  ssim: 0.0530
+  iou: 0.1387
+Layer 4 metrics:
+  pearson_correlation: 0.0134
+  kl_divergence: -401.2447
+  ssim: 0.0530
+  iou: 0.1387
+
+After resizing:
+Target shape: (56, 56)
+Saliency map shape: (56, 56)
+Attention map shape: (56, 56)
+
+Normalized maps statistics:
+Saliency - min: 0.00000, max: 1.00000, mean: 0.11024, std: 0.10024
+Attention - min: 0.00000, max: 1.00000, mean: 0.45705, std: 0.15214
+
+Metrics for layer 5:
+  pearson_correlation: 0.0139
+  kl_divergence: -352.8663
+  ssim: 0.0496
+  iou: 0.1496
+Layer 5 metrics:
+  pearson_correlation: 0.0139
+  kl_divergence: -352.8663
+  ssim: 0.0496
+  iou: 0.1496
+
+After resizing:
+Target shape: (56, 56)
+Saliency map shape: (56, 56)
+Attention map shape: (56, 56)
+
+Normalized maps statistics:
+Saliency - min: 0.00000, max: 1.00000, mean: 0.11024, std: 0.10024
+Attention - min: 0.00000, max: 1.00000, mean: 0.50891, std: 0.14310
+
+Metrics for layer 6:
+  pearson_correlation: 0.0222
+  kl_divergence: -401.3020
+  ssim: 0.0588
+  iou: 0.1538
+Layer 6 metrics:
+  pearson_correlation: 0.0222
+  kl_divergence: -401.3020
+  ssim: 0.0588
+  iou: 0.1538
+
+After resizing:
+Target shape: (28, 28)
+Saliency map shape: (28, 28)
+Attention map shape: (28, 28)
+
+Normalized maps statistics:
+Saliency - min: 0.00000, max: 1.00000, mean: 0.12111, std: 0.11528
+Attention - min: 0.00000, max: 1.00000, mean: 0.53503, std: 0.13086
+
+Metrics for layer 7:
+  pearson_correlation: -0.0228
+  kl_divergence: -104.0750
+  ssim: 0.0327
+  iou: 0.1496
+Layer 7 metrics:
+  pearson_correlation: -0.0228
+  kl_divergence: -104.0750
+  ssim: 0.0327
+  iou: 0.1496
+
+After resizing:
+Target shape: (28, 28)
+Saliency map shape: (28, 28)
+Attention map shape: (28, 28)
+
+Normalized maps statistics:
+Saliency - min: 0.00000, max: 1.00000, mean: 0.12111, std: 0.11528
+Attention - min: 0.00000, max: 1.00000, mean: 0.46143, std: 0.16104
+
+Metrics for layer 8:
+  pearson_correlation: -0.0172
+  kl_divergence: -87.2471
+  ssim: 0.0412
+  iou: 0.1362
+Layer 8 metrics:
+  pearson_correlation: -0.0172
+  kl_divergence: -87.2471
+  ssim: 0.0412
+  iou: 0.1362
+
+After resizing:
+Target shape: (28, 28)
+Saliency map shape: (28, 28)
+Attention map shape: (28, 28)
+
+Normalized maps statistics:
+Saliency - min: 0.00000, max: 1.00000, mean: 0.12111, std: 0.11528
+Attention - min: 0.00000, max: 1.00000, mean: 0.52143, std: 0.17497
+
+Metrics for layer 9:
+  pearson_correlation: 0.0144
+  kl_divergence: -95.7508
+  ssim: 0.0395
+  iou: 0.1598
+Layer 9 metrics:
+  pearson_correlation: 0.0144
+  kl_divergence: -95.7508
+  ssim: 0.0395
+  iou: 0.1598
+
+After resizing:
+Target shape: (14, 14)
+Saliency map shape: (14, 14)
+Attention map shape: (14, 14)
+
+Normalized maps statistics:
+Saliency - min: 0.00000, max: 1.00000, mean: 0.16107, std: 0.13879
+Attention - min: 0.00000, max: 1.00000, mean: 0.52029, std: 0.20688
+
+Metrics for layer 10:
+  pearson_correlation: -0.0850
+  kl_divergence: -20.1963
+  ssim: -0.0031
+  iou: 0.0769
+Layer 10 metrics:
+  pearson_correlation: -0.0850
+  kl_divergence: -20.1963
+  ssim: -0.0031
+  iou: 0.0769
+
+After resizing:
+Target shape: (14, 14)
+Saliency map shape: (14, 14)
+Attention map shape: (14, 14)
+
+Normalized maps statistics:
+Saliency - min: 0.00000, max: 1.00000, mean: 0.16107, std: 0.13879
+Attention - min: 0.00000, max: 1.00000, mean: 0.53498, std: 0.20082
+
+Metrics for layer 11:
+  pearson_correlation: 0.0534
+  kl_divergence: -25.6111
+  ssim: 0.0329
+  iou: 0.0889
+Layer 11 metrics:
+  pearson_correlation: 0.0534
+  kl_divergence: -25.6111
+  ssim: 0.0329
+  iou: 0.0889
+
+After resizing:
+Target shape: (14, 14)
+Saliency map shape: (14, 14)
+Attention map shape: (14, 14)
+
+Normalized maps statistics:
+Saliency - min: 0.00000, max: 1.00000, mean: 0.16107, std: 0.13879
+Attention - min: 0.00000, max: 1.00000, mean: 0.59616, std: 0.18912
+
+Metrics for layer 12:
+  pearson_correlation: -0.0994
+  kl_divergence: -18.3877
+  ssim: 0.0177
+  iou: 0.1667
+Layer 12 metrics:
+  pearson_correlation: -0.0994
+  kl_divergence: -18.3877
+  ssim: 0.0177
+  iou: 0.1667
+Analyzing attention effects...
+Computing baseline responses...
+Computing responses with attention...
+
+Creating feed dict:
+
+Creating feed dict:
+Successfully analyzed attention effects
+Generating visualizations...
+Saliency (final) stats at visualization: min=0.00000, max=1.00000, mean=0.06079, std=0.06400
+Saved visualization for image 0
+Saved batch results to /scratch/hy2611/CNN_attention/Data/VGG16/attention_results_cat5_layer1/batch_0_strength_0.8_results.npy
+
+Processing batch 2/2
+Attention strength: 0.8
+Generating tuning curve attention maps...
+Successfully generated 13 attention maps
+Computing saliency maps...
+Saliency statistics: min=0.00000, max=1.00000, mean=0.03700, std=0.03738
+Saliency map shape: (1, 224, 224)
+Non-zero elements: 50175
+Value range: 0.0 - 1.0
+Saliency map shape: (1, 224, 224)
+Non-zero elements: 50175
+Value range: 0.0 - 1.0
+
+=== Debug Shapes After saliency computation ===
+Saliency map shape: (1, 224, 224)
+Attention map 0 shape: (1, 224, 224, 64)
+Attention map 1 shape: (1, 224, 224, 64)
+Attention map 2 shape: (1, 112, 112, 128)
+Attention map 3 shape: (1, 112, 112, 128)
+Attention map 4 shape: (1, 56, 56, 256)
+Attention map 5 shape: (1, 56, 56, 256)
+Attention map 6 shape: (1, 56, 56, 256)
+Attention map 7 shape: (1, 28, 28, 512)
+Attention map 8 shape: (1, 28, 28, 512)
+Attention map 9 shape: (1, 28, 28, 512)
+Attention map 10 shape: (1, 14, 14, 512)
+Attention map 11 shape: (1, 14, 14, 512)
+Attention map 12 shape: (1, 14, 14, 512)
+Successfully generated saliency maps
+Comparing saliency and attention maps...
+
+After resizing:
+Target shape: (224, 224)
+Saliency map shape: (224, 224)
+Attention map shape: (224, 224)
+
+Normalized maps statistics:
+Saliency - min: 0.00000, max: 1.00000, mean: 0.03700, std: 0.03738
+Attention - min: 0.00000, max: 1.00000, mean: 0.38479, std: 0.10979
+
+Metrics for layer 0:
+  pearson_correlation: -0.0050
+  kl_divergence: -3581.8906
+  ssim: 0.0425
+  iou: 0.1402
+Layer 0 metrics:
+  pearson_correlation: -0.0050
+  kl_divergence: -3581.8906
+  ssim: 0.0425
+  iou: 0.1402
+
+After resizing:
+Target shape: (224, 224)
+Saliency map shape: (224, 224)
+Attention map shape: (224, 224)
+
+Normalized maps statistics:
+Saliency - min: 0.00000, max: 1.00000, mean: 0.03700, std: 0.03738
+Attention - min: 0.00000, max: 1.00000, mean: 0.48694, std: 0.11758
+
+Metrics for layer 1:
+  pearson_correlation: -0.0018
+  kl_divergence: -4043.7834
+  ssim: 0.0308
+  iou: 0.1405
+Layer 1 metrics:
+  pearson_correlation: -0.0018
+  kl_divergence: -4043.7834
+  ssim: 0.0308
+  iou: 0.1405
+
+After resizing:
+Target shape: (112, 112)
+Saliency map shape: (112, 112)
+Attention map shape: (112, 112)
+
+Normalized maps statistics:
+Saliency - min: 0.00000, max: 1.00000, mean: 0.07117, std: 0.06162
+Attention - min: 0.00000, max: 1.00000, mean: 0.46346, std: 0.13949
+
+Metrics for layer 2:
+  pearson_correlation: -0.0012
+  kl_divergence: -1371.2882
+  ssim: 0.0439
+  iou: 0.1416
+Layer 2 metrics:
+  pearson_correlation: -0.0012
+  kl_divergence: -1371.2882
+  ssim: 0.0439
+  iou: 0.1416
+
+After resizing:
+Target shape: (112, 112)
+Saliency map shape: (112, 112)
+Attention map shape: (112, 112)
+
+Normalized maps statistics:
+Saliency - min: 0.00000, max: 1.00000, mean: 0.07117, std: 0.06162
+Attention - min: 0.00000, max: 1.00000, mean: 0.45468, std: 0.12190
+
+Metrics for layer 3:
+  pearson_correlation: 0.0028
+  kl_divergence: -1366.9307
+  ssim: 0.0549
+  iou: 0.1449
+Layer 3 metrics:
+  pearson_correlation: 0.0028
+  kl_divergence: -1366.9307
+  ssim: 0.0549
+  iou: 0.1449
+
+After resizing:
+Target shape: (56, 56)
+Saliency map shape: (56, 56)
+Attention map shape: (56, 56)
+
+Normalized maps statistics:
+Saliency - min: 0.00000, max: 1.00000, mean: 0.11423, std: 0.10009
+Attention - min: 0.00000, max: 1.00000, mean: 0.49058, std: 0.15557
+
+Metrics for layer 4:
+  pearson_correlation: 0.0090
+  kl_divergence: -393.5437
+  ssim: 0.0411
+  iou: 0.1598
+Layer 4 metrics:
+  pearson_correlation: 0.0090
+  kl_divergence: -393.5437
+  ssim: 0.0411
+  iou: 0.1598
+
+After resizing:
+Target shape: (56, 56)
+Saliency map shape: (56, 56)
+Attention map shape: (56, 56)
+
+Normalized maps statistics:
+Saliency - min: 0.00000, max: 1.00000, mean: 0.11423, std: 0.10009
+Attention - min: 0.00000, max: 1.00000, mean: 0.43512, std: 0.13869
+
+Metrics for layer 5:
+  pearson_correlation: -0.0112
+  kl_divergence: -349.6536
+  ssim: 0.0487
+  iou: 0.1272
+Layer 5 metrics:
+  pearson_correlation: -0.0112
+  kl_divergence: -349.6536
+  ssim: 0.0487
+  iou: 0.1272
+
+After resizing:
+Target shape: (56, 56)
+Saliency map shape: (56, 56)
+Attention map shape: (56, 56)
+
+Normalized maps statistics:
+Saliency - min: 0.00000, max: 1.00000, mean: 0.11423, std: 0.10009
+Attention - min: 0.00000, max: 1.00000, mean: 0.44048, std: 0.14299
+
+Metrics for layer 6:
+  pearson_correlation: -0.0087
+  kl_divergence: -351.3231
+  ssim: 0.0539
+  iou: 0.1346
+Layer 6 metrics:
+  pearson_correlation: -0.0087
+  kl_divergence: -351.3231
+  ssim: 0.0539
+  iou: 0.1346
+
+After resizing:
+Target shape: (28, 28)
+Saliency map shape: (28, 28)
+Attention map shape: (28, 28)
+
+Normalized maps statistics:
+Saliency - min: 0.00000, max: 1.00000, mean: 0.07594, std: 0.07019
+Attention - min: 0.00000, max: 1.00000, mean: 0.58510, std: 0.15381
+
+Metrics for layer 7:
+  pearson_correlation: 0.0078
+  kl_divergence: -99.5978
+  ssim: 0.0392
+  iou: 0.1297
+Layer 7 metrics:
+  pearson_correlation: 0.0078
+  kl_divergence: -99.5978
+  ssim: 0.0392
+  iou: 0.1297
+
+After resizing:
+Target shape: (28, 28)
+Saliency map shape: (28, 28)
+Attention map shape: (28, 28)
+
+Normalized maps statistics:
+Saliency - min: 0.00000, max: 1.00000, mean: 0.07594, std: 0.07019
+Attention - min: 0.00000, max: 1.00000, mean: 0.50436, std: 0.14923
+
+Metrics for layer 8:
+  pearson_correlation: -0.0101
+  kl_divergence: -90.9795
+  ssim: 0.0361
+  iou: 0.1462
+Layer 8 metrics:
+  pearson_correlation: -0.0101
+  kl_divergence: -90.9795
+  ssim: 0.0361
+  iou: 0.1462
+
+After resizing:
+Target shape: (28, 28)
+Saliency map shape: (28, 28)
+Attention map shape: (28, 28)
+
+Normalized maps statistics:
+Saliency - min: 0.00000, max: 1.00000, mean: 0.07594, std: 0.07019
+Attention - min: 0.00000, max: 1.00000, mean: 0.48353, std: 0.15800
+
+Metrics for layer 9:
+  pearson_correlation: 0.0510
+  kl_divergence: -87.6366
+  ssim: 0.0406
+  iou: 0.1915
+Layer 9 metrics:
+  pearson_correlation: 0.0510
+  kl_divergence: -87.6366
+  ssim: 0.0406
+  iou: 0.1915
+
+After resizing:
+Target shape: (14, 14)
+Saliency map shape: (14, 14)
+Attention map shape: (14, 14)
+
+Normalized maps statistics:
+Saliency - min: 0.00000, max: 1.00000, mean: 0.18658, std: 0.16890
+Attention - min: 0.00000, max: 1.00000, mean: 0.48764, std: 0.16032
+
+Metrics for layer 10:
+  pearson_correlation: -0.0274
+  kl_divergence: -18.7071
+  ssim: -0.0534
+  iou: 0.1667
+Layer 10 metrics:
+  pearson_correlation: -0.0274
+  kl_divergence: -18.7071
+  ssim: -0.0534
+  iou: 0.1667
+
+After resizing:
+Target shape: (14, 14)
+Saliency map shape: (14, 14)
+Attention map shape: (14, 14)
+
+Normalized maps statistics:
+Saliency - min: 0.00000, max: 1.00000, mean: 0.18658, std: 0.16890
+Attention - min: 0.00000, max: 1.00000, mean: 0.48114, std: 0.14626
+
+Metrics for layer 11:
+  pearson_correlation: -0.0489
+  kl_divergence: -18.7789
+  ssim: 0.0074
+  iou: 0.1136
+Layer 11 metrics:
+  pearson_correlation: -0.0489
+  kl_divergence: -18.7789
+  ssim: 0.0074
+  iou: 0.1136
+
+After resizing:
+Target shape: (14, 14)
+Saliency map shape: (14, 14)
+Attention map shape: (14, 14)
+
+Normalized maps statistics:
+Saliency - min: 0.00000, max: 1.00000, mean: 0.18658, std: 0.16890
+Attention - min: 0.00000, max: 1.00000, mean: 0.55168, std: 0.15921
+
+Metrics for layer 12:
+  pearson_correlation: -0.0237
+  kl_divergence: -23.4752
+  ssim: -0.0286
+  iou: 0.1136
+Layer 12 metrics:
+  pearson_correlation: -0.0237
+  kl_divergence: -23.4752
+  ssim: -0.0286
+  iou: 0.1136
+Analyzing attention effects...
+Computing baseline responses...
+Computing responses with attention...
+
+Creating feed dict:
+
+Creating feed dict:
+Successfully analyzed attention effects
+Generating visualizations...
+Saliency (final) stats at visualization: min=0.00000, max=1.00000, mean=0.03700, std=0.03738
+Saved visualization for image 0
+Saved batch results to /scratch/hy2611/CNN_attention/Data/VGG16/attention_results_cat5_layer1/batch_1_strength_0.8_results.npy
+
+Processing attention strength 1.2
+Attention vector: [0.  1.2 0.  0.  0.  0.  0.  0.  0.  0.  0.  0.  0. ]
+
+Processing batch 1/2
+Attention strength: 1.2
+Generating tuning curve attention maps...
+Successfully generated 13 attention maps
+Computing saliency maps...
+Saliency statistics: min=0.00000, max=1.00000, mean=0.06079, std=0.06400
+Saliency map shape: (1, 224, 224)
+Non-zero elements: 50175
+Value range: 0.0 - 1.0
+Saliency map shape: (1, 224, 224)
+Non-zero elements: 50175
+Value range: 0.0 - 1.0
+
+=== Debug Shapes After saliency computation ===
+Saliency map shape: (1, 224, 224)
+Attention map 0 shape: (1, 224, 224, 64)
+Attention map 1 shape: (1, 224, 224, 64)
+Attention map 2 shape: (1, 112, 112, 128)
+Attention map 3 shape: (1, 112, 112, 128)
+Attention map 4 shape: (1, 56, 56, 256)
+Attention map 5 shape: (1, 56, 56, 256)
+Attention map 6 shape: (1, 56, 56, 256)
+Attention map 7 shape: (1, 28, 28, 512)
+Attention map 8 shape: (1, 28, 28, 512)
+Attention map 9 shape: (1, 28, 28, 512)
+Attention map 10 shape: (1, 14, 14, 512)
+Attention map 11 shape: (1, 14, 14, 512)
+Attention map 12 shape: (1, 14, 14, 512)
+Successfully generated saliency maps
+Comparing saliency and attention maps...
+
+After resizing:
+Target shape: (224, 224)
+Saliency map shape: (224, 224)
+Attention map shape: (224, 224)
+
+Normalized maps statistics:
+Saliency - min: 0.00000, max: 1.00000, mean: 0.06079, std: 0.06400
+Attention - min: 0.00000, max: 1.00000, mean: 0.46262, std: 0.11541
+
+Metrics for layer 0:
+  pearson_correlation: 0.0042
+  kl_divergence: -4862.3364
+  ssim: 0.0486
+  iou: 0.1416
+Layer 0 metrics:
+  pearson_correlation: 0.0042
+  kl_divergence: -4862.3364
+  ssim: 0.0486
+  iou: 0.1416
+
+After resizing:
+Target shape: (224, 224)
+Saliency map shape: (224, 224)
+Attention map shape: (224, 224)
+
+Normalized maps statistics:
+Saliency - min: 0.00000, max: 1.00000, mean: 0.06079, std: 0.06400
+Attention - min: 0.00000, max: 1.00000, mean: 0.51957, std: 0.10764
+
+Metrics for layer 1:
+  pearson_correlation: 0.0047
+  kl_divergence: -5246.7949
+  ssim: 0.0484
+  iou: 0.1432
+Layer 1 metrics:
+  pearson_correlation: 0.0047
+  kl_divergence: -5246.7949
+  ssim: 0.0484
+  iou: 0.1432
+
+After resizing:
+Target shape: (112, 112)
+Saliency map shape: (112, 112)
+Attention map shape: (112, 112)
+
+Normalized maps statistics:
+Saliency - min: 0.00000, max: 1.00000, mean: 0.07963, std: 0.07093
+Attention - min: 0.00000, max: 1.00000, mean: 0.44730, std: 0.13090
+
+Metrics for layer 2:
+  pearson_correlation: -0.0135
+  kl_divergence: -1363.1714
+  ssim: 0.0520
+  iou: 0.1433
+Layer 2 metrics:
+  pearson_correlation: -0.0135
+  kl_divergence: -1363.1714
+  ssim: 0.0520
+  iou: 0.1433
+
+After resizing:
+Target shape: (112, 112)
+Saliency map shape: (112, 112)
+Attention map shape: (112, 112)
+
+Normalized maps statistics:
+Saliency - min: 0.00000, max: 1.00000, mean: 0.07963, std: 0.07093
+Attention - min: 0.00000, max: 1.00000, mean: 0.44030, std: 0.12199
+
+Metrics for layer 3:
+  pearson_correlation: 0.0011
+  kl_divergence: -1356.2675
+  ssim: 0.0618
+  iou: 0.1410
+Layer 3 metrics:
+  pearson_correlation: 0.0011
+  kl_divergence: -1356.2675
+  ssim: 0.0618
+  iou: 0.1410
+
+After resizing:
+Target shape: (56, 56)
+Saliency map shape: (56, 56)
+Attention map shape: (56, 56)
+
+Normalized maps statistics:
+Saliency - min: 0.00000, max: 1.00000, mean: 0.11024, std: 0.10024
+Attention - min: 0.00000, max: 1.00000, mean: 0.47911, std: 0.13435
+
+Metrics for layer 4:
+  pearson_correlation: -0.0361
+  kl_divergence: -374.0480
+  ssim: 0.0529
+  iou: 0.1240
+Layer 4 metrics:
+  pearson_correlation: -0.0361
+  kl_divergence: -374.0480
+  ssim: 0.0529
+  iou: 0.1240
+
+After resizing:
+Target shape: (56, 56)
+Saliency map shape: (56, 56)
+Attention map shape: (56, 56)
+
+Normalized maps statistics:
+Saliency - min: 0.00000, max: 1.00000, mean: 0.11024, std: 0.10024
+Attention - min: 0.00000, max: 1.00000, mean: 0.47207, std: 0.13752
+
+Metrics for layer 5:
+  pearson_correlation: 0.0001
+  kl_divergence: -365.0025
+  ssim: 0.0604
+  iou: 0.1487
+Layer 5 metrics:
+  pearson_correlation: 0.0001
+  kl_divergence: -365.0025
+  ssim: 0.0604
+  iou: 0.1487
+
+After resizing:
+Target shape: (56, 56)
+Saliency map shape: (56, 56)
+Attention map shape: (56, 56)
+
+Normalized maps statistics:
+Saliency - min: 0.00000, max: 1.00000, mean: 0.11024, std: 0.10024
+Attention - min: 0.00000, max: 1.00000, mean: 0.50961, std: 0.14109
+
+Metrics for layer 6:
+  pearson_correlation: 0.0273
+  kl_divergence: -398.4733
+  ssim: 0.0605
+  iou: 0.1563
+Layer 6 metrics:
+  pearson_correlation: 0.0273
+  kl_divergence: -398.4733
+  ssim: 0.0605
+  iou: 0.1563
+
+After resizing:
+Target shape: (28, 28)
+Saliency map shape: (28, 28)
+Attention map shape: (28, 28)
+
+Normalized maps statistics:
+Saliency - min: 0.00000, max: 1.00000, mean: 0.12111, std: 0.11528
+Attention - min: 0.00000, max: 1.00000, mean: 0.49918, std: 0.15189
+
+Metrics for layer 7:
+  pearson_correlation: -0.0086
+  kl_divergence: -95.8311
+  ssim: 0.0408
+  iou: 0.1329
+Layer 7 metrics:
+  pearson_correlation: -0.0086
+  kl_divergence: -95.8311
+  ssim: 0.0408
+  iou: 0.1329
+
+After resizing:
+Target shape: (28, 28)
+Saliency map shape: (28, 28)
+Attention map shape: (28, 28)
+
+Normalized maps statistics:
+Saliency - min: 0.00000, max: 1.00000, mean: 0.12111, std: 0.11528
+Attention - min: 0.00000, max: 1.00000, mean: 0.44343, std: 0.14926
+
+Metrics for layer 8:
+  pearson_correlation: -0.0009
+  kl_divergence: -82.8260
+  ssim: 0.0491
+  iou: 0.1297
+Layer 8 metrics:
+  pearson_correlation: -0.0009
+  kl_divergence: -82.8260
+  ssim: 0.0491
+  iou: 0.1297
+
+After resizing:
+Target shape: (28, 28)
+Saliency map shape: (28, 28)
+Attention map shape: (28, 28)
+
+Normalized maps statistics:
+Saliency - min: 0.00000, max: 1.00000, mean: 0.12111, std: 0.11528
+Attention - min: 0.00000, max: 1.00000, mean: 0.44927, std: 0.18618
+
+Metrics for layer 9:
+  pearson_correlation: 0.0400
+  kl_divergence: -81.3837
+  ssim: 0.0561
+  iou: 0.1772
+Layer 9 metrics:
+  pearson_correlation: 0.0400
+  kl_divergence: -81.3837
+  ssim: 0.0561
+  iou: 0.1772
+
+After resizing:
+Target shape: (14, 14)
+Saliency map shape: (14, 14)
+Attention map shape: (14, 14)
+
+Normalized maps statistics:
+Saliency - min: 0.00000, max: 1.00000, mean: 0.16107, std: 0.13879
+Attention - min: 0.00000, max: 1.00000, mean: 0.55249, std: 0.15006
+
+Metrics for layer 10:
+  pearson_correlation: -0.1047
+  kl_divergence: -23.8013
+  ssim: 0.0007
+  iou: 0.1136
+Layer 10 metrics:
+  pearson_correlation: -0.1047
+  kl_divergence: -23.8013
+  ssim: 0.0007
+  iou: 0.1136
+
+After resizing:
+Target shape: (14, 14)
+Saliency map shape: (14, 14)
+Attention map shape: (14, 14)
+
+Normalized maps statistics:
+Saliency - min: 0.00000, max: 1.00000, mean: 0.16107, std: 0.13879
+Attention - min: 0.00000, max: 1.00000, mean: 0.41112, std: 0.15793
+
+Metrics for layer 11:
+  pearson_correlation: 0.0225
+  kl_divergence: -13.0076
+  ssim: 0.0542
+  iou: 0.1395
+Layer 11 metrics:
+  pearson_correlation: 0.0225
+  kl_divergence: -13.0076
+  ssim: 0.0542
+  iou: 0.1395
+
+After resizing:
+Target shape: (14, 14)
+Saliency map shape: (14, 14)
+Attention map shape: (14, 14)
+
+Normalized maps statistics:
+Saliency - min: 0.00000, max: 1.00000, mean: 0.16107, std: 0.13879
+Attention - min: 0.00000, max: 1.00000, mean: 0.54915, std: 0.18929
+
+Metrics for layer 12:
+  pearson_correlation: 0.1502
+  kl_divergence: -24.1426
+  ssim: 0.1357
+  iou: 0.1667
+Layer 12 metrics:
+  pearson_correlation: 0.1502
+  kl_divergence: -24.1426
+  ssim: 0.1357
+  iou: 0.1667
+Analyzing attention effects...
+Computing baseline responses...
+Computing responses with attention...
+
+Creating feed dict:
+
+Creating feed dict:
+Successfully analyzed attention effects
+Generating visualizations...
+Saliency (final) stats at visualization: min=0.00000, max=1.00000, mean=0.06079, std=0.06400
+Saved visualization for image 0
+Saved batch results to /scratch/hy2611/CNN_attention/Data/VGG16/attention_results_cat5_layer1/batch_0_strength_1.2_results.npy
+
+Processing batch 2/2
+Attention strength: 1.2
+Generating tuning curve attention maps...
+Successfully generated 13 attention maps
+Computing saliency maps...
+Saliency statistics: min=0.00000, max=1.00000, mean=0.03700, std=0.03738
+Saliency map shape: (1, 224, 224)
+Non-zero elements: 50175
+Value range: 0.0 - 1.0
+Saliency map shape: (1, 224, 224)
+Non-zero elements: 50175
+Value range: 0.0 - 1.0
+
+=== Debug Shapes After saliency computation ===
+Saliency map shape: (1, 224, 224)
+Attention map 0 shape: (1, 224, 224, 64)
+Attention map 1 shape: (1, 224, 224, 64)
+Attention map 2 shape: (1, 112, 112, 128)
+Attention map 3 shape: (1, 112, 112, 128)
+Attention map 4 shape: (1, 56, 56, 256)
+Attention map 5 shape: (1, 56, 56, 256)
+Attention map 6 shape: (1, 56, 56, 256)
+Attention map 7 shape: (1, 28, 28, 512)
+Attention map 8 shape: (1, 28, 28, 512)
+Attention map 9 shape: (1, 28, 28, 512)
+Attention map 10 shape: (1, 14, 14, 512)
+Attention map 11 shape: (1, 14, 14, 512)
+Attention map 12 shape: (1, 14, 14, 512)
+Successfully generated saliency maps
+Comparing saliency and attention maps...
+
+After resizing:
+Target shape: (224, 224)
+Saliency map shape: (224, 224)
+Attention map shape: (224, 224)
+
+Normalized maps statistics:
+Saliency - min: 0.00000, max: 1.00000, mean: 0.03700, std: 0.03738
+Attention - min: 0.00000, max: 1.00000, mean: 0.40348, std: 0.11429
+
+Metrics for layer 0:
+  pearson_correlation: -0.0006
+  kl_divergence: -3673.9814
+  ssim: 0.0385
+  iou: 0.1442
+Layer 0 metrics:
+  pearson_correlation: -0.0006
+  kl_divergence: -3673.9814
+  ssim: 0.0385
+  iou: 0.1442
+
+After resizing:
+Target shape: (224, 224)
+Saliency map shape: (224, 224)
+Attention map shape: (224, 224)
+
+Normalized maps statistics:
+Saliency - min: 0.00000, max: 1.00000, mean: 0.03700, std: 0.03738
+Attention - min: 0.00000, max: 1.00000, mean: 0.52526, std: 0.11711
+
+Metrics for layer 1:
+  pearson_correlation: -0.0066
+  kl_divergence: -4193.1572
+  ssim: 0.0282
+  iou: 0.1409
+Layer 1 metrics:
+  pearson_correlation: -0.0066
+  kl_divergence: -4193.1572
+  ssim: 0.0282
+  iou: 0.1409
+
+After resizing:
+Target shape: (112, 112)
+Saliency map shape: (112, 112)
+Attention map shape: (112, 112)
+
+Normalized maps statistics:
+Saliency - min: 0.00000, max: 1.00000, mean: 0.07117, std: 0.06162
+Attention - min: 0.00000, max: 1.00000, mean: 0.46944, std: 0.12749
+
+Metrics for layer 2:
+  pearson_correlation: -0.0198
+  kl_divergence: -1389.5391
+  ssim: 0.0473
+  iou: 0.1329
+Layer 2 metrics:
+  pearson_correlation: -0.0198
+  kl_divergence: -1389.5391
+  ssim: 0.0473
+  iou: 0.1329
+
+After resizing:
+Target shape: (112, 112)
+Saliency map shape: (112, 112)
+Attention map shape: (112, 112)
+
+Normalized maps statistics:
+Saliency - min: 0.00000, max: 1.00000, mean: 0.07117, std: 0.06162
+Attention - min: 0.00000, max: 1.00000, mean: 0.46864, std: 0.13725
+
+Metrics for layer 3:
+  pearson_correlation: -0.0113
+  kl_divergence: -1381.2782
+  ssim: 0.0407
+  iou: 0.1426
+Layer 3 metrics:
+  pearson_correlation: -0.0113
+  kl_divergence: -1381.2782
+  ssim: 0.0407
+  iou: 0.1426
+
+After resizing:
+Target shape: (56, 56)
+Saliency map shape: (56, 56)
+Attention map shape: (56, 56)
+
+Normalized maps statistics:
+Saliency - min: 0.00000, max: 1.00000, mean: 0.11423, std: 0.10009
+Attention - min: 0.00000, max: 1.00000, mean: 0.47020, std: 0.14161
+
+Metrics for layer 4:
+  pearson_correlation: -0.0168
+  kl_divergence: -378.0021
+  ssim: 0.0549
+  iou: 0.1362
+Layer 4 metrics:
+  pearson_correlation: -0.0168
+  kl_divergence: -378.0021
+  ssim: 0.0549
+  iou: 0.1362
+
+After resizing:
+Target shape: (56, 56)
+Saliency map shape: (56, 56)
+Attention map shape: (56, 56)
+
+Normalized maps statistics:
+Saliency - min: 0.00000, max: 1.00000, mean: 0.11423, std: 0.10009
+Attention - min: 0.00000, max: 1.00000, mean: 0.48452, std: 0.14072
+
+Metrics for layer 5:
+  pearson_correlation: 0.0074
+  kl_divergence: -391.8931
+  ssim: 0.0617
+  iou: 0.1546
+Layer 5 metrics:
+  pearson_correlation: 0.0074
+  kl_divergence: -391.8931
+  ssim: 0.0617
+  iou: 0.1546
+
+After resizing:
+Target shape: (56, 56)
+Saliency map shape: (56, 56)
+Attention map shape: (56, 56)
+
+Normalized maps statistics:
+Saliency - min: 0.00000, max: 1.00000, mean: 0.11423, std: 0.10009
+Attention - min: 0.00000, max: 1.00000, mean: 0.46975, std: 0.13815
+
+Metrics for layer 6:
+  pearson_correlation: 0.0011
+  kl_divergence: -379.6352
+  ssim: 0.0626
+  iou: 0.1512
+Layer 6 metrics:
+  pearson_correlation: 0.0011
+  kl_divergence: -379.6352
+  ssim: 0.0626
+  iou: 0.1512
+
+After resizing:
+Target shape: (28, 28)
+Saliency map shape: (28, 28)
+Attention map shape: (28, 28)
+
+Normalized maps statistics:
+Saliency - min: 0.00000, max: 1.00000, mean: 0.07594, std: 0.07019
+Attention - min: 0.00000, max: 1.00000, mean: 0.49698, std: 0.15303
+
+Metrics for layer 7:
+  pearson_correlation: -0.0245
+  kl_divergence: -87.7195
+  ssim: 0.0271
+  iou: 0.1264
+Layer 7 metrics:
+  pearson_correlation: -0.0245
+  kl_divergence: -87.7195
+  ssim: 0.0271
+  iou: 0.1264
+
+After resizing:
+Target shape: (28, 28)
+Saliency map shape: (28, 28)
+Attention map shape: (28, 28)
+
+Normalized maps statistics:
+Saliency - min: 0.00000, max: 1.00000, mean: 0.07594, std: 0.07019
+Attention - min: 0.00000, max: 1.00000, mean: 0.46652, std: 0.17475
+
+Metrics for layer 8:
+  pearson_correlation: -0.0064
+  kl_divergence: -81.9351
+  ssim: 0.0257
+  iou: 0.1598
+Layer 8 metrics:
+  pearson_correlation: -0.0064
+  kl_divergence: -81.9351
+  ssim: 0.0257
+  iou: 0.1598
+
+After resizing:
+Target shape: (28, 28)
+Saliency map shape: (28, 28)
+Attention map shape: (28, 28)
+
+Normalized maps statistics:
+Saliency - min: 0.00000, max: 1.00000, mean: 0.07594, std: 0.07019
+Attention - min: 0.00000, max: 1.00000, mean: 0.48627, std: 0.17652
+
+Metrics for layer 9:
+  pearson_correlation: -0.0614
+  kl_divergence: -84.9459
+  ssim: 0.0185
+  iou: 0.1200
+Layer 9 metrics:
+  pearson_correlation: -0.0614
+  kl_divergence: -84.9459
+  ssim: 0.0185
+  iou: 0.1200
+
+After resizing:
+Target shape: (14, 14)
+Saliency map shape: (14, 14)
+Attention map shape: (14, 14)
+
+Normalized maps statistics:
+Saliency - min: 0.00000, max: 1.00000, mean: 0.18658, std: 0.16890
+Attention - min: 0.00000, max: 1.00000, mean: 0.47602, std: 0.17502
+
+Metrics for layer 10:
+  pearson_correlation: -0.1374
+  kl_divergence: -12.3859
+  ssim: -0.0570
+  iou: 0.1136
+Layer 10 metrics:
+  pearson_correlation: -0.1374
+  kl_divergence: -12.3859
+  ssim: -0.0570
+  iou: 0.1136
+
+After resizing:
+Target shape: (14, 14)
+Saliency map shape: (14, 14)
+Attention map shape: (14, 14)
+
+Normalized maps statistics:
+Saliency - min: 0.00000, max: 1.00000, mean: 0.18658, std: 0.16890
+Attention - min: 0.00000, max: 1.00000, mean: 0.56313, std: 0.16444
+
+Metrics for layer 11:
+  pearson_correlation: 0.0663
+  kl_divergence: -25.3282
+  ssim: 0.0178
+  iou: 0.1807
+Layer 11 metrics:
+  pearson_correlation: 0.0663
+  kl_divergence: -25.3282
+  ssim: 0.0178
+  iou: 0.1807
+
+After resizing:
+Target shape: (14, 14)
+Saliency map shape: (14, 14)
+Attention map shape: (14, 14)
+
+Normalized maps statistics:
+Saliency - min: 0.00000, max: 1.00000, mean: 0.18658, std: 0.16890
+Attention - min: 0.00000, max: 1.00000, mean: 0.54379, std: 0.16839
+
+Metrics for layer 12:
+  pearson_correlation: 0.0029
+  kl_divergence: -23.3123
+  ssim: 0.0418
+  iou: 0.1667
+Layer 12 metrics:
+  pearson_correlation: 0.0029
+  kl_divergence: -23.3123
+  ssim: 0.0418
+  iou: 0.1667
+Analyzing attention effects...
+Computing baseline responses...
+Computing responses with attention...
+
+Creating feed dict:
+
+Creating feed dict:
+Successfully analyzed attention effects
+Generating visualizations...
+Saliency (final) stats at visualization: min=0.00000, max=1.00000, mean=0.03700, std=0.03738
+Saved visualization for image 0
+Saved batch results to /scratch/hy2611/CNN_attention/Data/VGG16/attention_results_cat5_layer1/batch_1_strength_1.2_results.npy
+
+Analysis complete! Results saved to /scratch/hy2611/CNN_attention/Data/VGG16/attention_results_cat5_layer1
