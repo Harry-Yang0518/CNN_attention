@@ -1,4 +1,4 @@
-# CNN_attention
+# Comparing Saliency Maps and Attention Masks in Neural Networks for Enhanced Interpretability and Performance
 
 # 1. NYU Greene Environment Setup Guide
 
